@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" data/generate_vietnam_data.R)",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" scripts/pacta_vietnam_scenario.R)",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \":*)",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\(library\\(r2dii.data\\)\\); cat\\(''Systems:'', paste\\(unique\\(sector_classifications$code_system\\), collapse='', ''\\), ''\\\\n''\\); x <- subset\\(sector_classifications, code_system==''ISIC''\\); cat\\(''ISIC rows:'', nrow\\(x\\), ''\\\\n''\\); if\\(nrow\\(x\\)>0\\) print\\(head\\(x,10\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\(library\\(r2dii.data\\)\\); writeLines\\(paste\\(unique\\(sector_classifications$code_system\\), collapse='', ''\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\(library\\(r2dii.data\\)\\); sc <- sector_classifications; writeLines\\(unique\\(sc[[''code_system'']]\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\(library\\(r2dii.data\\)\\); sc <- sector_classifications; isic <- sc[sc[[''code_system'']]==''ISIC'',]; writeLines\\(paste\\(isic[[''code'']], isic[[''sector'']], sep='' -> ''\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\(library\\(r2dii.data\\)\\); cat\\(''region_isos_demo columns:'', paste\\(names\\(region_isos_demo\\), collapse='', ''\\), ''\\\\n''\\); print\\(head\\(region_isos_demo, 5\\)\\)\")",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" -e \"suppressPackageStartupMessages\\({ library\\(pacta.loanbook\\); library\\(r2dii.data\\); library\\(r2dii.match\\); library\\(r2dii.analysis\\); library\\(dplyr\\); library\\(readr\\); library\\(stringi\\) }\\); loanbook <- read_csv\\(''''data/vietnam_loanbook.csv'''', show_col_types=FALSE\\); abcd <- read_csv\\(''''data/vietnam_abcd.csv'''', show_col_types=FALSE\\); scenario <- read_csv\\(''''data/vietnam_scenario_ms.csv'''', show_col_types=FALSE\\); region <- read_csv\\(''''data/vietnam_region_isos.csv'''', show_col_types=FALSE\\); sc_ext <- bind_rows\\(sector_classifications, tibble\\(code_system=''''ISIC'''', code=c\\(''''D3511'''',''''C2910'''',''''C2394'''',''''C2410'''',''''B0510''''\\), sector=c\\(''''power'''',''''automotive'''',''''cement'''',''''steel'''',''''coal''''\\), borderline=FALSE\\)\\); lb_c <- loanbook %>% mutate\\(sector_classification_direct_loantaker=as.character\\(sector_classification_direct_loantaker\\)\\) %>% left_join\\(sc_ext, by=c\\(''''sector_classification_system''''=''''code_system'''',''''sector_classification_direct_loantaker''''=''''code''''\\)\\) %>% rename\\(sector_classified=sector, borderline_classified=borderline\\); lb_n <- lb_c %>% mutate\\(name_direct_loantaker=stri_trans_general\\(name_direct_loantaker,''''Latin-ASCII''''\\), name_ultimate_parent=stri_trans_general\\(name_ultimate_parent,''''Latin-ASCII''''\\)\\); abcd_n <- abcd %>% mutate\\(name_company=stri_trans_general\\(name_company,''''Latin-ASCII''''\\)\\); matched_raw <- match_name\\(lb_n, abcd_n, by_sector=TRUE, min_score=0.8\\); matched <- prioritize\\(matched_raw\\); matched_ms <- matched %>% select\\(-any_of\\(c\\(''''sector_classified'''',''''borderline_classified''''\\)\\)\\); ms <- target_market_share\\(data=matched_ms, abcd=abcd_n, scenario=scenario, region_isos=region\\); cat\\(''''rows:'''', nrow\\(ms\\), ''''regions:'''', paste\\(unique\\(ms[[''''region'''']]\\), collapse='''', ''''\\), ''''metrics:'''', paste\\(unique\\(ms[[''''metric'''']]\\), collapse='''', ''''\\)\\)\")",
+      "Bash('C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe' scripts/pacta_vietnam_scenario.R)",
+      "Read(//tmp/**)",
+      "Bash(\"C:\\\\Program Files\\\\R\\\\R-4.5.2\\\\bin\\\\Rscript.exe\" scripts/debug_ms.R)",
+      "Bash(python3.exe -c \"print\\(''test''\\)\")",
+      "Bash(py -3 -c \"print\\(''test''\\)\")",
+      "Bash(py:*)"
+    ]
+  }
+}

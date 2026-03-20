@@ -1,6 +1,6 @@
 # Active Context: PACTA Vietnam Project
 
-> Last updated: 2026-02-27 (Session 5 — Synthesis pipeline written & executed)
+> Last updated: 2026-03-20 (Session 6 — Vietnam-specific pipeline written, partially executed)
 
 ## Project Goal
 
@@ -12,8 +12,9 @@ Learn and run the **PACTA (Paris Agreement Capital Transition Assessment)** tool
 4. Generate a professional, shareable HTML report with embedded visualizations
 5. Compare AI implementation against Staff's independent implementation and produce a comparison report
 6. Synthesize a "best of both" production pipeline merging AI + Staff approaches into a single script and HTML report
+7. Build a Vietnam-specific PACTA pipeline using synthetic Vietnamese bank data (MCB) and adapted scenarios (PDP8, NDC, NZE)
 
-**Status: ALL COMPLETE (1–6)**
+**Status: 1–6 COMPLETE. Step 7 IN PROGRESS (pipeline partially executed — see Session 6)**
 
 ---
 
@@ -90,6 +91,30 @@ pacta-vietnam/
 │   ├── 12_cement_emission.png     # r2dii.plot cement emission intensity
 │   ├── 13_steel_emission.png      # r2dii.plot steel emission intensity
 │   └── 14_alignment_overview.png  # Multi-sector alignment overview (custom ggplot2)
+├── data/                          # ★ Vietnam-specific synthetic input data (Session 6)
+│   ├── generate_vietnam_data.R    # Generator script for all 5 Vietnam CSVs
+│   ├── vietnam_loanbook.csv       # Synthetic MCB loanbook (VND, ISIC codes, Vietnamese names)
+│   ├── vietnam_abcd.csv           # Vietnam ABCD: EVN, Vinacomin, VinFast, THACO, VICEM, Hoa Phat, etc.
+│   ├── vietnam_scenario_ms.csv    # PDP8/NDC/NZE market share scenario pathways
+│   ├── vietnam_scenario_co2.csv   # CO2 intensity scenarios for cement & steel
+│   └── vietnam_region_isos.csv    # Vietnam region ISO mapping
+├── plans/                         # ★ Implementation plans (Session 6)
+│   └── vietnam_bank_pacta_scenario_plan.md  # Full blueprint (~700 lines): Vietnam context, data design, roadmap
+├── scripts/
+│   ├── debug_ms.R                 # ★ Diagnostic for market share region/metric debugging
+│   └── pacta_vietnam_scenario.R   # ★ Vietnam pipeline for Mekong Commercial Bank (1352 lines)
+├── synthesis_output/vietnam/      # ★ Partial outputs from Vietnam pipeline (Sections 1–9 only)
+│   ├── 01_vn_matched_raw.csv
+│   ├── 02_vn_matched_prioritized.csv
+│   ├── 03_vn_coverage_pie.png
+│   ├── 04_vn_ms_portfolio.csv
+│   ├── 04_vn_ms_company.csv
+│   ├── 05_vn_power_techmix.png
+│   ├── 06_vn_coal_trajectory.png
+│   ├── 07_vn_renewables_trajectory.png
+│   ├── 08_vn_auto_techmix.png
+│   └── 09_vn_ev_trajectory.png
+│   (MISSING: SDA outputs, alignment gaps, alignment overview, HTML report)
 └── .opencode/                    # OpenCode tool internals (do not edit)
 ```
 
@@ -152,6 +177,25 @@ pacta-vietnam/
   - All alignment gaps match previous sessions (auto EV -0.5pp, hybrid -13.2pp, ICE +13.8pp, cement +76%, steel +37%)
   - Power sector still shows NA at 2025 for most technologies (demo data limitation)
 - **Output:** `reports/PACTA_Synthesis_Report.html` + 19 files in `synthesis_output/` (11 PNGs + 8 CSVs)
+
+### Session 6: Vietnam-Specific PACTA Pipeline (2026-03-20)
+
+- **Goal:** Replace demo data with a Vietnam-realistic synthetic scenario — synthetic loanbook for "Mekong Commercial Bank (MCB)", Vietnam ABCD (EVN, Vinacomin, VinFast, THACO, VICEM, Hoa Phat, etc.), and adapted climate scenarios (PDP8, NDC, IEA NZE)
+- **Key activities:**
+  - Created `plans/vietnam_bank_pacta_scenario_plan.md` — comprehensive blueprint covering Vietnam energy context (PDP8, NDC, JETP), bank loanbook design, ABCD design, scenario adaptation, and 11-section implementation roadmap
+  - Created `data/generate_vietnam_data.R` + 5 CSV files:
+    - `vietnam_loanbook.csv` — synthetic MCB loanbook in VND with ISIC codes and Vietnamese company names (EVN subsidiaries, THACO, VinFast, VICEM, Hoa Phat, Vinacomin, etc.)
+    - `vietnam_abcd.csv` — ABCD with Vietnamese company production data for power/auto/cement/steel/coal sectors
+    - `vietnam_scenario_ms.csv` — market share pathways for PDP8, Vietnam NDC, and IEA NZE 2050
+    - `vietnam_scenario_co2.csv` — CO2 intensity scenarios for cement and steel
+    - `vietnam_region_isos.csv` — Vietnam region ISO mapping
+  - Wrote `scripts/pacta_vietnam_scenario.R` (1352 lines): full pipeline with VSIC→ISIC→PACTA custom mapping, ASCII normalization for Vietnamese diacritics, `min_score=0.8` fuzzy matching, PDP8/NDC scenario alignment, bilingual Vietnamese/English HTML report targeting Vietnamese bank audience
+  - Wrote `scripts/debug_ms.R` — diagnostic script to investigate market share `region`/`metric` output structure
+- **Execution status: PARTIAL**
+  - Pipeline ran through Section 9 (EV trajectory charts) — 10 files produced in `synthesis_output/vietnam/`
+  - Pipeline stopped before completing: SDA analysis (cement/steel), alignment gap calculation, alignment overview chart, and HTML report (`reports/PACTA_Vietnam_Bank_Report.html`) were NOT produced
+  - Root cause: likely a market share region/metric mismatch (debug_ms.R was written mid-session to diagnose)
+- **Outstanding issue:** Need to run `debug_ms.R` output and fix the pipeline so it completes through HTML report generation
 
 ---
 
@@ -268,10 +312,11 @@ When filtering data to a subset of metrics but providing `scale_*_manual()` mapp
 - [x] ~~Merge implementations: Create a unified pipeline combining best elements from AI + Staff~~ (done in Session 5: `scripts/pacta_synthesis.R`)
 - [x] ~~Add ICE trajectory chart~~ (included in synthesis pipeline)
 - [x] ~~Implement sector mismatch validation~~ (included in synthesis pipeline)
-- [ ] **Build R Markdown version:** Convert `pacta_synthesis.R` into an `.Rmd` literate programming notebook for internal use
-- [ ] Replace demo data with a real or simulated Vietnam bank loanbook
-- [ ] Source IEA WEO or NGFS scenarios for production-grade pathways
-- [ ] Prepare VSIC-to-PACTA sector mapping (leverage Staff's VSIC/NAICS work)
+- [x] ~~Replace demo data with a real or simulated Vietnam bank loanbook~~ (done in Session 6: synthetic MCB dataset)
+- [x] ~~Source IEA WEO or NGFS scenarios for production-grade pathways~~ (done in Session 6: PDP8/NDC/NZE scenarios)
+- [x] ~~Prepare VSIC-to-PACTA sector mapping~~ (done in Session 6: VSIC→ISIC→PACTA mapping in `pacta_vietnam_scenario.R`)
+- [ ] **⚠️ URGENT: Fix Vietnam pipeline completion** — run `debug_ms.R`, diagnose market share region/metric issue, and complete pipeline through HTML report (`reports/PACTA_Vietnam_Bank_Report.html`)
+- [ ] Build R Markdown version: Convert `pacta_synthesis.R` into an `.Rmd` literate programming notebook for internal use
 - [ ] Investigate ABCD data sources for Vietnamese companies (Asset Impact or self-prepared)
 - [ ] Build a Shiny dashboard for interactive exploration
 - [ ] Extend analysis to oil & gas and aviation sectors

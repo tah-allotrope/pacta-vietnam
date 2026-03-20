@@ -1,0 +1,175 @@
+company_id,name_company,lei,sector,technology,production_unit,year,production,emission_factor,plant_location,is_ultimate_owner,emission_factor_unit
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2025,12500,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2026,12500,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2027,12000,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2028,11800,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2029,11500,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,coalcap,MW,2030,11000,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2025,1500,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2026,1520,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2027,1540,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2028,1560,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2029,1580,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,gascap,MW,2030,1600,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2025,7800,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2026,7850,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2027,7900,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2028,7950,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2029,8000,NA,VN,TRUE,NA
+VN_ABCD_001,EVN (Electricity of Vietnam),NA,power,hydrocap,MW,2030,8100,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2025,2600,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2026,2580,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2027,2550,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2028,2500,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2029,2460,NA,VN,TRUE,NA
+VN_ABCD_002,Vinacomin Power JSC,NA,power,coalcap,MW,2030,2400,NA,VN,TRUE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2025,1200,NA,VN,FALSE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2026,1200,NA,VN,FALSE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2027,1200,NA,VN,FALSE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2028,1200,NA,VN,FALSE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2029,1200,NA,VN,FALSE,NA
+VN_ABCD_003,International Power Mong Duong,NA,power,coalcap,MW,2030,1200,NA,VN,FALSE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2025,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2026,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2027,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2028,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2029,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,coalcap,MW,2030,600,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2025,4200,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2026,4500,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2027,5200,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2028,5800,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2029,6200,NA,VN,TRUE,NA
+VN_ABCD_004,PVN Power Corporation,NA,power,gascap,MW,2030,6800,NA,VN,TRUE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2025,1200,NA,VN,FALSE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2026,1200,NA,VN,FALSE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2027,1200,NA,VN,FALSE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2028,1200,NA,VN,FALSE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2029,1200,NA,VN,FALSE,NA
+VN_ABCD_005,Nghi Son Power LLC,NA,power,coalcap,MW,2030,1200,NA,VN,FALSE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2025,0,NA,VN,TRUE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2026,0,NA,VN,TRUE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2027,400,NA,VN,TRUE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2028,680,NA,VN,TRUE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2029,750,NA,VN,TRUE,NA
+VN_ABCD_006,Dung Quat LNG Power Consortium,NA,power,gascap,MW,2030,750,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2025,2400,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2026,2420,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2027,2450,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2028,2500,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2029,2550,NA,VN,TRUE,NA
+VN_ABCD_007,Vietnam Hydropower JSC,NA,power,hydrocap,MW,2030,2600,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2025,1050,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2026,1350,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2027,1600,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2028,1900,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2029,2200,NA,VN,TRUE,NA
+VN_ABCD_008,Trung Nam Group,NA,power,renewablescap,MW,2030,2500,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2025,380,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2026,420,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2027,460,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2028,510,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2029,560,NA,VN,TRUE,NA
+VN_ABCD_009,BIM Group,NA,power,renewablescap,MW,2030,600,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2025,520,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2026,580,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2027,640,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2028,700,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2029,760,NA,VN,TRUE,NA
+VN_ABCD_010,Thanh Thanh Cong Group,NA,power,renewablescap,MW,2030,800,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2025,650,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2026,730,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2027,810,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2028,880,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2029,950,NA,VN,TRUE,NA
+VN_ABCD_011,Xuan Thien Group,NA,power,renewablescap,MW,2030,1000,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2025,480,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2026,560,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2027,640,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2028,700,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2029,760,NA,VN,TRUE,NA
+VN_ABCD_012,T&T Group,NA,power,renewablescap,MW,2030,800,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2025,350,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2026,380,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2027,410,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2028,450,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2029,480,NA,VN,TRUE,NA
+VN_ABCD_013,Gia Lai Electricity JSC,NA,power,renewablescap,MW,2030,500,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2025,120000,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2026,125000,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2027,128000,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2028,130000,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2029,130000,NA,VN,TRUE,NA
+VN_ABCD_014,THACO Industries,NA,automotive,ice,vehicles,2030,128000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2025,62000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2026,60000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2027,58000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2028,56000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2029,54000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,ice,vehicles,2030,50000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2025,2000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2026,4000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2027,6000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2028,8000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2029,10000,NA,VN,TRUE,NA
+VN_ABCD_015,Toyota Motor Corporation,NA,automotive,hybrid,vehicles,2030,14000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2025,50000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2026,51000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2027,52000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2028,52000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2029,51000,NA,VN,TRUE,NA
+VN_ABCD_016,Ford Motor Company,NA,automotive,ice,vehicles,2030,50000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2025,45000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2026,45000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2027,44000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2028,43000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2029,42000,NA,VN,TRUE,NA
+VN_ABCD_017,Hyundai Motor Company,NA,automotive,ice,vehicles,2030,40000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2025,45000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2026,70000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2027,100000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2028,130000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2029,160000,NA,VN,TRUE,NA
+VN_ABCD_018,Vingroup JSC,NA,automotive,electric,vehicles,2030,200000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2025,18000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2026,19000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2027,20000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2028,20000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2029,21000,NA,VN,TRUE,NA
+VN_ABCD_019,Honda Motor Co Ltd,NA,automotive,hybrid,vehicles,2030,22000,NA,VN,TRUE,NA
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2025,12500000,0.82,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2026,12500000,0.806,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2027,12800000,0.791,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2028,13000000,0.776,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2029,13000000,0.76,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_020,VICEM,NA,cement,integrated facility,tonnes,2030,13200000,0.745,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2025,7000000,0.72,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2026,7100000,0.706,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2027,7200000,0.693,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2028,7300000,0.679,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2029,7400000,0.666,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_021,Holcim Group,NA,cement,integrated facility,tonnes,2030,7500000,0.653,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2025,7500000,1.85,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2026,7700000,1.84,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2027,7900000,1.83,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2028,8100000,1.82,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2029,8300000,1.81,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_022,Hoa Phat Group JSC,NA,steel,open_hearth,tonnes,2030,8500000,1.8,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2025,1200000,0.58,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2026,1260000,0.566,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2027,1320000,0.554,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2028,1380000,0.541,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2029,1440000,0.529,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_023,Pomina Group,NA,steel,electric,tonnes,2030,1500000,0.517,VN,TRUE,tonnes of CO2 per tonne
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2025,36000000,NA,VN,TRUE,NA
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2026,35500000,NA,VN,TRUE,NA
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2027,35000000,NA,VN,TRUE,NA
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2028,34000000,NA,VN,TRUE,NA
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2029,33000000,NA,VN,TRUE,NA
+VN_ABCD_024,Vietnam National Coal-Mineral Industries Group,NA,coal,thermal coal,tonnes,2030,31000000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2025,4000000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2026,3900000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2027,3800000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2028,3700000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2029,3600000,NA,VN,TRUE,NA
+VN_ABCD_025,Dong Bac Corporation,NA,coal,thermal coal,tonnes,2030,3500000,NA,VN,TRUE,NA
