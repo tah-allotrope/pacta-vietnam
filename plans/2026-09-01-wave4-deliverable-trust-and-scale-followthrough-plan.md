@@ -1,7 +1,7 @@
 ---
 title: "Wave 4: Deliverable Trust, Provenance Truth, and Scale Follow-Through"
 date: "2026-09-01"
-status: "draft"
+status: "complete — all six phases implemented and committed (6e9b2ef..35a13c5, e9e1940; 0.5.0 -> 0.6.0), with only TASK-05-08 (--full-chain benchmark) deliberately deferred to a later wave because the fixture generator cannot produce asset-level inputs"
 request: "Turn research/2026-09-01-wave4-deliverable-trust-and-scale-followthrough-brainstorm.md into a multi-phase implementation plan: extend the acceptance gate to generated HTML deliverables, fix three verified provenance defects, close two invariant blind spots, restore the package export surface, and finish the deferred scale work."
 plan_type: "multi-phase"
 research_inputs:
