@@ -1,0 +1,8 @@
+{
+  "run_id": "20260908-5f7c394-pdp8-2025-adjusted",
+  "generated_at": "2026-09-08T08:02:27+0700",
+  "git_sha": "5f7c3948be5cd49685c461772b25c16042cae588",
+  "scenario_vintage": "pdp8-2025-adjusted",
+  "bank_slug": "mcb-demo",
+  "artifacts": ["engagement_priority.csv", "sector_priority_ranking.csv", "06_vn_ms_alignment_2030.csv", "06_vn_sda_alignment_2030.csv"]
+}

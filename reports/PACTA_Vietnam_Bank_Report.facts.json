@@ -1,0 +1,39 @@
+{
+  "report": "reports/PACTA_Vietnam_Bank_Report.html",
+  "generated_by": "scripts/pacta_vietnam_scenario.R",
+  "facts": [
+    {
+      "name": "portfolio_total_vnd",
+      "value": 25020000000000,
+      "unit": "VND",
+      "rendered": "25,020.0 bn VND",
+      "source": {
+        "csv": "data/vietnam_loanbook.csv",
+        "column": "loan_size_outstanding",
+        "agg": "sum"
+      }
+    },
+    {
+      "name": "n_loans",
+      "value": 43,
+      "unit": "loans",
+      "rendered": "43",
+      "source": {
+        "csv": "data/vietnam_loanbook.csv",
+        "column": null,
+        "agg": "nrow"
+      }
+    },
+    {
+      "name": "n_matched",
+      "value": 43,
+      "unit": "loans",
+      "rendered": "43",
+      "source": {
+        "csv": "synthesis_output/vietnam/02_vn_matched_prioritized.csv",
+        "column": null,
+        "agg": "nrow"
+      }
+    }
+  ]
+}

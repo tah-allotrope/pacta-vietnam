@@ -1,0 +1,8 @@
+sector,technology,projected,target_pdp8,share_gap_pp,is_low_carbon,aligned
+automotive,electric,0.2222222222222222,0.38053116757351574,-15.83,TRUE,Misaligned
+automotive,hybrid,0.09687499999999999,0.139575744731951,-4.27,TRUE,Misaligned
+automotive,ice,0.6809027777777777,0.4798930876945332,20.1,FALSE,Misaligned
+power,coalcap,0.3697729048835994,0.1470185102909382,22.28,FALSE,Misaligned
+power,gascap,0.21882404584839038,0.20330145030857735,1.55,FALSE,Misaligned
+power,hydrocap,0.20531554134156765,0.3139550183765521,-10.86,TRUE,Misaligned
+power,renewablescap,0.20608750792644262,0.3357250210239323,-12.96,TRUE,Misaligned

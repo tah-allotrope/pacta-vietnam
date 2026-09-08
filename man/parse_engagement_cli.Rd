@@ -14,7 +14,8 @@ named list with fields config_path character(1), full logical(1),
 raw_loanbook character(1)|NULL, skip_intake logical(1),
 top_n character(1)|NULL, only_steps character,
 resume_from character(1) (NA_character_ when unset),
-allow_partial_manifest logical(1), dry_run logical(1).
+allow_partial_manifest logical(1), strict_deps logical(1),
+dry_run logical(1).
 }
 \description{
 Moved verbatim from scripts/run_engagement.R's inline flag handling so

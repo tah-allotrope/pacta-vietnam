@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import pytest
 
-from dashboard.lib.loaders import load_trisk_grid, TRISK_DIR
+from dashboard.lib.loaders import load_trisk_grid, trisk_dir
 
 CARBON_LABELS = {
     "NGFS_NetZero2050": "Net Zero 2050 (strict)",

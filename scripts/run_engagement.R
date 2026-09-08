@@ -38,6 +38,9 @@
 #   to overwrite an existing COMPLETE manifest in the public snapshot. The
 #   written manifest is marked "partial": true either way; without this flag
 #   the orchestrator refuses rather than destroying the full-run record.
+# --strict-deps: escalate step-dependency previous-run reads from warnings to
+#   errors. A filtered run that would read an artifact this run does not
+#   produce then fails instead of producing a confident, stale result.
 # --dry-run: print the resolved step list (one "name: script args" line per
 #   step) and exit 0 without executing or writing anything.
 #
@@ -130,7 +133,8 @@ write_pipeline_manifest(
   row_count_files = cfg$row_count_files,
   extra = list(
     bank_slug = cfg$bank_slug, config_path = effective_config_path,
-    scenario_vintage = cfg$inputs$scenario_vintage
+    scenario_vintage = cfg$inputs$scenario_vintage,
+    dependency_warnings = plan$dependency_warnings
   ),
   partial = run_is_partial,
   filters = list(only_step = plan$manifest_policy$only_step, resume_from = plan$manifest_policy$resume_from)

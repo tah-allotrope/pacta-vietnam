@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import json
 from pathlib import Path
 
@@ -8,23 +10,56 @@ import streamlit as st
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
-PACTA_DIR = DATA_DIR / "pacta"
-TRISK_DIR = DATA_DIR / "trisk"
-REPORTS_DIR = DATA_DIR / "reports"
-ANALYTICS_DIR = DATA_DIR / "analytics"
-TRISK_MANIFEST = TRISK_DIR / "manifest.csv"
-PIPELINE_MANIFEST = DATA_DIR / "pipeline_manifest.json"
+
+
+def snapshot_root() -> Path:
+    """The snapshot directory the app reads (Wave 5 PHASE-06).
+
+    From `PACTATRISK_SNAPSHOT_DIR` when set, otherwise the frozen public
+    snapshot `dashboard/data`. A client engagement is a directory, not a
+    repository fork.
+    """
+    return Path(os.environ.get("PACTATRISK_SNAPSHOT_DIR", str(ROOT / "data"))).resolve()
+
+
+def pacta_dir() -> Path:
+    return snapshot_root() / "pacta"
+
+
+def trisk_dir() -> Path:
+    return snapshot_root() / "trisk"
+
+
+def reports_dir() -> Path:
+    return snapshot_root() / "reports"
+
+
+def analytics_dir() -> Path:
+    return snapshot_root() / "analytics"
+
+
+def trisk_manifest() -> Path:
+    return trisk_dir() / "manifest.csv"
+
+
+def pipeline_manifest_path() -> Path:
+    return snapshot_root() / "pipeline_manifest.json"
 
 
 def load_pipeline_manifest() -> dict | None:
     """Read the pipeline refresh manifest, or None if it hasn't been generated yet."""
-    if not PIPELINE_MANIFEST.exists():
+    manifest_path = pipeline_manifest_path()
+    if not manifest_path.exists():
         return None
     try:
-        return json.loads(PIPELINE_MANIFEST.read_text(encoding="utf-8"))
+        return json.loads(manifest_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
+
+
+# Every cached loader takes its path as an argument (never closes over a
+# module-level snapshot directory), so switching PACTATRISK_SNAPSHOT_DIR
+# mid-session serves the new snapshot instead of a stale memoized frame.
 
 
 @st.cache_data(show_spinner=False)
@@ -43,23 +78,23 @@ def load_bytes(path: str | Path) -> bytes:
 
 
 def pacta_path(name: str) -> Path:
-    return PACTA_DIR / name
+    return pacta_dir() / name
 
 
 def trisk_path(name: str) -> Path:
-    return TRISK_DIR / name
+    return trisk_dir() / name
 
 
 def trisk_sector_path(sector: str, name: str) -> Path:
-    return TRISK_DIR / sector / name
+    return trisk_dir() / sector / name
 
 
 def reports_path(name: str) -> Path:
-    return REPORTS_DIR / name
+    return reports_dir() / name
 
 
 def analytics_path(name: str) -> Path:
-    return ANALYTICS_DIR / name
+    return analytics_dir() / name
 
 
 # Filenames copied into <snapshot>/analytics/ by scripts/refresh_dashboard_data.R,
@@ -104,7 +139,7 @@ def load_pacta_alignment_tables() -> dict[str, pd.DataFrame]:
 
 
 def load_trisk_tables() -> dict[str, pd.DataFrame]:
-    manifest = load_csv(TRISK_MANIFEST)
+    manifest = load_csv(trisk_manifest())
     default_sector = manifest.iloc[0]["sector"]
     return {
         "manifest": manifest,
@@ -137,7 +172,7 @@ def load_parquet(path: str | Path) -> pd.DataFrame:
 
 
 def load_trisk_grid(sector: str) -> dict[str, pd.DataFrame]:
-    grid_dir = TRISK_DIR / "grid" / sector
+    grid_dir = trisk_dir() / "grid" / sector
     return {
         "scenarios": load_csv(grid_dir / "scenarios.csv"),
         "borrower_results": load_parquet(grid_dir / "borrower_results.parquet"),
@@ -145,7 +180,7 @@ def load_trisk_grid(sector: str) -> dict[str, pd.DataFrame]:
 
 
 def list_report_files() -> list[Path]:
-    return sorted(REPORTS_DIR.glob("*.html"))
+    return sorted(reports_dir().glob("*.html"))
 
 
 def _load_report_catalog_sidecar() -> dict[str, dict[str, str]]:
@@ -155,7 +190,7 @@ def _load_report_catalog_sidecar() -> dict[str, dict[str, str]]:
     unreadable -- report_catalog() below degrades every file to an
     uncatalogued entry rather than raising.
     """
-    sidecar_path = REPORTS_DIR / "report_catalog.json"
+    sidecar_path = reports_dir() / "report_catalog.json"
     if not sidecar_path.exists():
         return {}
     try:
@@ -166,12 +201,25 @@ def _load_report_catalog_sidecar() -> dict[str, dict[str, str]]:
         return {}
 
 
+def _artifact_date(path: Path, fallback: str = "") -> str:
+    """Displayed date for a published artifact (Wave 5 PHASE-04): the file's
+    own modification date formatted YYYY-MM-DD, falling back to the catalog
+    string when stat() raises."""
+    import datetime
+
+    try:
+        return datetime.datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d")
+    except OSError:
+        return fallback
+
+
 def report_catalog() -> list[dict[str, str | Path]]:
     """Every HTML file actually present in the reports snapshot, with
     metadata from report_catalog.json when available. A published file with
     no catalog entry is never silently dropped (Wave 3 PHASE-02, N-008) --
     it gets a filename-derived title and an explicit "no summary" marker
-    instead.
+    instead. The displayed date comes from the artifact file itself, not
+    the catalog's hand-typed string (Wave 5 PHASE-04).
     """
     catalog = _load_report_catalog_sidecar()
     rows: list[dict[str, str | Path]] = []
@@ -181,7 +229,7 @@ def report_catalog() -> list[dict[str, str | Path]]:
             rows.append({
                 "path": path,
                 "title": meta.get("title", path.stem),
-                "date": meta.get("date", ""),
+                "date": _artifact_date(path, meta.get("date", "")),
                 "summary": meta.get("summary", "No summary available."),
                 "category": meta.get("category", "uncatalogued"),
             })
@@ -189,7 +237,7 @@ def report_catalog() -> list[dict[str, str | Path]]:
             rows.append({
                 "path": path,
                 "title": path.stem,
-                "date": "",
+                "date": _artifact_date(path),
                 "summary": "No summary available.",
                 "category": "uncatalogued",
             })

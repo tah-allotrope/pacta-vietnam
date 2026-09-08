@@ -5,28 +5,30 @@ import json
 from dashboard.lib import loaders
 
 
+def _point_snapshot_at(monkeypatch, snapshot_dir) -> None:
+    """Wave 5 PHASE-06: the snapshot seam is PACTATRISK_SNAPSHOT_DIR."""
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(snapshot_dir))
+
+
 def test_load_pipeline_manifest_missing(monkeypatch, tmp_path) -> None:
-    missing_path = tmp_path / "pipeline_manifest.json"
-    monkeypatch.setattr(loaders, "PIPELINE_MANIFEST", missing_path)
+    _point_snapshot_at(monkeypatch, tmp_path)
     assert loaders.load_pipeline_manifest() is None
 
 
 def test_load_pipeline_manifest_present(monkeypatch, tmp_path) -> None:
-    manifest_path = tmp_path / "pipeline_manifest.json"
-    manifest_path.write_text(
+    (tmp_path / "pipeline_manifest.json").write_text(
         json.dumps({"generated_at": "2026-07-04T00:00:00", "git_sha": "abc123", "status": "ok"}),
         encoding="utf-8",
     )
-    monkeypatch.setattr(loaders, "PIPELINE_MANIFEST", manifest_path)
+    _point_snapshot_at(monkeypatch, tmp_path)
     manifest = loaders.load_pipeline_manifest()
     assert manifest is not None
     assert manifest["status"] == "ok"
 
 
 def test_load_pipeline_manifest_corrupt(monkeypatch, tmp_path) -> None:
-    manifest_path = tmp_path / "pipeline_manifest.json"
-    manifest_path.write_text("{not valid json", encoding="utf-8")
-    monkeypatch.setattr(loaders, "PIPELINE_MANIFEST", manifest_path)
+    (tmp_path / "pipeline_manifest.json").write_text("{not valid json", encoding="utf-8")
+    _point_snapshot_at(monkeypatch, tmp_path)
     assert loaders.load_pipeline_manifest() is None
 
 
@@ -46,10 +48,17 @@ def test_data_freshness_badge_shows_scenario_vintage(monkeypatch, tmp_path) -> N
 
     script_path = tmp_path / "badge_script.py"
     script_path.write_text(
-        "from pathlib import Path\n"
-        "from dashboard.lib import loaders, branding\n"
-        f"loaders.PIPELINE_MANIFEST = Path(r'{manifest_path}')\n"
-        "branding.data_freshness_badge()\n",
+        "import os\n"
+        "from dashboard.lib import branding\n"
+        f"_prev_snapshot = os.environ.get('PACTATRISK_SNAPSHOT_DIR')\n"
+        f"os.environ['PACTATRISK_SNAPSHOT_DIR'] = r'{tmp_path}'\n"
+        "try:\n"
+        "    branding.data_freshness_badge()\n"
+        "finally:\n"
+        "    if _prev_snapshot is None:\n"
+        "        del os.environ['PACTATRISK_SNAPSHOT_DIR']\n"
+        "    else:\n"
+        "        os.environ['PACTATRISK_SNAPSHOT_DIR'] = _prev_snapshot\n",
         encoding="utf-8",
     )
 
@@ -71,10 +80,17 @@ def test_data_freshness_badge_omits_vintage_when_absent(tmp_path) -> None:
 
     script_path = tmp_path / "badge_script2.py"
     script_path.write_text(
-        "from pathlib import Path\n"
-        "from dashboard.lib import loaders, branding\n"
-        f"loaders.PIPELINE_MANIFEST = Path(r'{manifest_path}')\n"
-        "branding.data_freshness_badge()\n",
+        "import os\n"
+        "from dashboard.lib import branding\n"
+        f"_prev_snapshot = os.environ.get('PACTATRISK_SNAPSHOT_DIR')\n"
+        f"os.environ['PACTATRISK_SNAPSHOT_DIR'] = r'{tmp_path}'\n"
+        "try:\n"
+        "    branding.data_freshness_badge()\n"
+        "finally:\n"
+        "    if _prev_snapshot is None:\n"
+        "        del os.environ['PACTATRISK_SNAPSHOT_DIR']\n"
+        "    else:\n"
+        "        os.environ['PACTATRISK_SNAPSHOT_DIR'] = _prev_snapshot\n",
         encoding="utf-8",
     )
 

@@ -12,7 +12,8 @@ pacta_build_report(
   ms_alignment_2030,
   sda_alignment_2030,
   imgs,
-  report_dir
+  report_dir,
+  fx_rate_usd_vnd = 26300
 )
 }
 \arguments{

@@ -9,7 +9,7 @@ tracker). Per this project's global workflow convention, per-session
 implementation context now lives in the active plan document under
 `plans/` rather than in this file.
 
-- **Current program:** `plans/2026-08-26-wave3-convergence-vintage-delivery-plan.md`
+- **Current program:** `plans/2026-09-07-wave5-gate-enforcement-and-deliverable-truth-plan.md`
 - **Changelog:** `NEWS.md`
 - **Status pointer:** `plans/PROGRESS.md`
 

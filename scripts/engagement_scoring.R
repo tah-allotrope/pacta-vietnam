@@ -112,7 +112,7 @@ for (s in trisk_sectors) {
     npv_change            = df$npv_change,
     pd_change             = df$pd_change,
     trisk_stress_rank_pct  = df$stress_priority_score,
-    trisk_status          = sprintf("Covered — TRISK %s pilot", s),
+    trisk_status          = sprintf("Covered \u2014 TRISK %s pilot", s),
     alignment_basis       = df$alignment_context
   )
   cat(sprintf("  %s: %d borrowers\n", s, nrow(df)))

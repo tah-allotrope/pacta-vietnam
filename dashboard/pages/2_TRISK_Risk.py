@@ -9,7 +9,7 @@ import streamlit as st
 
 from dashboard.lib.branding import apply_page_frame, footer_note, public_demo_banner
 from dashboard.lib.charts import npv_var_scatter, ranked_bar, trajectory_line
-from dashboard.lib.loaders import TRISK_DIR, load_trisk_sector_tables, load_trisk_tables
+from dashboard.lib.loaders import load_trisk_sector_tables, load_trisk_tables, trisk_dir
 
 
 DISCLAIMER = (
@@ -20,7 +20,7 @@ DISCLAIMER = (
 
 def _build_sector_zip(sector: str) -> bytes:
     buffer = BytesIO()
-    sector_dir = TRISK_DIR / sector
+    sector_dir = trisk_dir() / sector
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zf:
         for path in sorted(sector_dir.iterdir()):
             if path.is_file():
@@ -34,11 +34,11 @@ def _build_full_zip(sectors: list[str]) -> bytes:
     # manifest itself — never a recursive walk of the whole snapshot tree.
     buffer = BytesIO()
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zf:
-        manifest_path = TRISK_DIR / "manifest.csv"
+        manifest_path = trisk_dir() / "manifest.csv"
         if manifest_path.is_file():
             zf.write(manifest_path, arcname="manifest.csv")
         for sector in sectors:
-            sector_dir = TRISK_DIR / sector
+            sector_dir = trisk_dir() / sector
             if not sector_dir.is_dir():
                 continue
             for path in sorted(sector_dir.iterdir()):

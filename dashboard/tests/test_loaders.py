@@ -6,11 +6,12 @@ from pathlib import Path
 import pandas as pd
 
 from dashboard.lib.loaders import (
-    TRISK_DIR,
     load_pacta_alignment_tables,
     load_trisk_grid,
     load_trisk_sector_tables,
     load_trisk_tables,
+    snapshot_root,
+    trisk_dir,
 )
 
 
@@ -38,7 +39,7 @@ def test_trisk_sector_loader_returns_dataframes() -> None:
 def test_trisk_grid_sectors_have_required_files() -> None:
     manifest = load_trisk_tables()["manifest"]
     for sector in manifest[manifest["grid_available"] == True]["sector"]:
-        grid_dir = TRISK_DIR / "grid" / sector
+        grid_dir = trisk_dir() / "grid" / sector
         assert (grid_dir / "scenarios.csv").exists(), f"Missing scenarios.csv for {sector}"
         assert (grid_dir / "borrower_results.parquet").exists(), f"Missing borrower_results.parquet for {sector}"
         assert (grid_dir / "grid_meta.json").exists(), f"Missing grid_meta.json for {sector}"
@@ -65,7 +66,7 @@ def test_trisk_grid_scenario_count() -> None:
     grid = load_trisk_grid("power")
     n_scenarios = len(grid["scenarios"])
 
-    grid_meta = json.loads((TRISK_DIR / "grid" / "power" / "grid_meta.json").read_text())
+    grid_meta = json.loads((trisk_dir() / "grid" / "power" / "grid_meta.json").read_text())
     assert n_scenarios == grid_meta["scenario_count"], (
         f"Loaded grid has {n_scenarios} scenarios but grid_meta.json records "
         f"scenario_count={grid_meta['scenario_count']}"
@@ -88,6 +89,7 @@ def test_report_catalog_never_drops_a_published_html_file(monkeypatch, tmp_path)
 
     reports_dir = tmp_path / "reports"
     reports_dir.mkdir()
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(tmp_path))
     (reports_dir / "Known_Report.html").write_text("<html></html>", encoding="utf-8")
     (reports_dir / "Mystery_Report.html").write_text("<html></html>", encoding="utf-8")
     (reports_dir / "report_catalog.json").write_text(
@@ -99,8 +101,6 @@ def test_report_catalog_never_drops_a_published_html_file(monkeypatch, tmp_path)
         }),
         encoding="utf-8",
     )
-
-    monkeypatch.setattr(loaders_mod, "REPORTS_DIR", reports_dir)
 
     rows = loaders_mod.report_catalog()
     names = {row["path"].name: row for row in rows}
@@ -118,9 +118,8 @@ def test_report_catalog_degrades_gracefully_with_no_sidecar(monkeypatch, tmp_pat
 
     reports_dir = tmp_path / "reports"
     reports_dir.mkdir()
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(tmp_path))
     (reports_dir / "Orphan.html").write_text("<html></html>", encoding="utf-8")
-
-    monkeypatch.setattr(loaders_mod, "REPORTS_DIR", reports_dir)
 
     rows = loaders_mod.report_catalog()
     assert len(rows) == 1
@@ -139,3 +138,76 @@ def test_live_snapshot_report_catalog_matches_published_reports() -> None:
         assert row["category"] != "internal_build", (
             f"{row['path'].name} is category internal_build and must not be in the published snapshot"
         )
+
+
+def test_report_catalog_date_comes_from_artifact_mtime(monkeypatch, tmp_path) -> None:
+    """Displayed dates derive from the artifact file, not the catalog string
+    (Wave 5 PHASE-04)."""
+    import os
+    import dashboard.lib.loaders as loaders_mod
+
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir()
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(tmp_path))
+    html = reports_dir / "Dated.html"
+    html.write_text("<html></html>", encoding="utf-8")
+    (reports_dir / "report_catalog.json").write_text(
+        json.dumps({
+            "Dated.html": {
+                "title": "Dated", "date": "1999-01-01",
+                "summary": "s", "category": "client_facing",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    import datetime
+    expected = datetime.datetime.fromtimestamp(html.stat().st_mtime).strftime("%Y-%m-%d")
+    rows = loaders_mod.report_catalog()
+    assert rows[0]["date"] == expected
+    assert rows[0]["date"] != "1999-01-01"
+
+
+def test_report_catalog_date_falls_back_to_catalog(monkeypatch, tmp_path) -> None:
+    """When the artifact is gone after listing (stat() failure), the catalog
+    string is used."""
+    import dashboard.lib.loaders as loaders_mod
+
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir()
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(tmp_path))
+    (reports_dir / "Gone.html").write_text("<html></html>", encoding="utf-8")
+    (reports_dir / "report_catalog.json").write_text(
+        json.dumps({
+            "Gone.html": {
+                "title": "Gone", "date": "1999-01-01",
+                "summary": "s", "category": "client_facing",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    real_glob = list(loaders_mod.list_report_files())
+    (reports_dir / "Gone.html").unlink()
+    monkeypatch.setattr(loaders_mod, "list_report_files", lambda: real_glob)
+
+    rows = loaders_mod.report_catalog()
+    assert rows[0]["date"] == "1999-01-01"
+
+
+def test_snapshot_root_defaults_to_dashboard_data(monkeypatch) -> None:
+    import dashboard.lib.loaders as loaders_mod
+
+    monkeypatch.delenv("PACTATRISK_SNAPSHOT_DIR", raising=False)
+    assert str(loaders_mod.snapshot_root()).endswith("dashboard" + __import__("os").sep + "data")
+
+
+def test_snapshot_root_reads_env_and_rebases_helpers(monkeypatch, tmp_path) -> None:
+    import dashboard.lib.loaders as loaders_mod
+
+    monkeypatch.setenv("PACTATRISK_SNAPSHOT_DIR", str(tmp_path))
+    assert loaders_mod.snapshot_root() == tmp_path.resolve()
+    assert (
+        loaders_mod.pacta_path("04_vn_ms_portfolio.csv")
+        == tmp_path.resolve() / "pacta" / "04_vn_ms_portfolio.csv"
+    )

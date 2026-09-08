@@ -356,7 +356,8 @@ test_that("inv_engagement_fixture_allowlist passes when the allowlisted slug has
 
 # --- INV-008: dependency manifest agreement ------------------------------------
 
-.write_dep_fixture <- function(root, description_imports, description_suggests, install_deps_cran, renv_pkgs) {
+.write_dep_fixture <- function(root, description_imports, description_suggests, install_deps_cran, renv_pkgs,
+                             install_deps_dev = NULL) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(root, "scripts", "ci"), recursive = TRUE, showWarnings = FALSE)
 
@@ -370,10 +371,12 @@ test_that("inv_engagement_fixture_allowlist passes when the allowlisted slug has
   }
   writeLines(desc_lines, file.path(root, "DESCRIPTION"))
 
-  writeLines(
-    sprintf('cran_packages <- c(%s)', paste0('"', install_deps_cran, '"', collapse = ", ")),
-    file.path(root, "scripts", "ci", "install_deps.R")
-  )
+  install_deps_lines <- sprintf('cran_packages <- c(%s)', paste0('"', install_deps_cran, '"', collapse = ", "))
+  if (!is.null(install_deps_dev)) {
+    install_deps_lines <- c(install_deps_lines,
+      sprintf('dev_packages <- c(%s)', paste0('"', install_deps_dev, '"', collapse = ", ")))
+  }
+  writeLines(install_deps_lines, file.path(root, "scripts", "ci", "install_deps.R"))
 
   lock <- list(Packages = setNames(
     lapply(renv_pkgs, function(p) list(Package = p, Version = "1.0.0")),
@@ -427,6 +430,33 @@ test_that("inv_dependency_manifests_agree exempts a Suggests-listed package", {
 
   result <- inv_dependency_manifests_agree(fixture_root)
   expect_true(result$ok)
+})
+
+test_that("inv_dependency_manifests_agree sees dev_packages listed in Suggests", {
+  fixture_root <- .new_fixture_root()
+  on.exit(unlink(fixture_root, recursive = TRUE, force = TRUE))
+  .write_dep_fixture(
+    fixture_root,
+    description_imports = c("dplyr"), description_suggests = c("roxygen2"),
+    install_deps_cran = c("dplyr"), renv_pkgs = c("dplyr"),
+    install_deps_dev = c("roxygen2")
+  )
+  result <- inv_dependency_manifests_agree(fixture_root)
+  expect_true(result$ok)
+})
+
+test_that("inv_dependency_manifests_agree fails on a dev package missing from DESCRIPTION", {
+  fixture_root <- .new_fixture_root()
+  on.exit(unlink(fixture_root, recursive = TRUE, force = TRUE))
+  .write_dep_fixture(
+    fixture_root,
+    description_imports = c("dplyr"), description_suggests = character(0),
+    install_deps_cran = c("dplyr"), renv_pkgs = c("dplyr"),
+    install_deps_dev = c("notapackage")
+  )
+  result <- inv_dependency_manifests_agree(fixture_root)
+  expect_false(result$ok)
+  expect_true(any(grepl("'notapackage' is used by (scripts/ci/install_deps.R) but missing from DESCRIPTION Imports", result$detail, fixed = TRUE)))
 })
 
 test_that("inv_dependency_manifests_agree passes when every used package is declared", {

@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
 root <- project_root()
 source(file.path(root, "R", "matching_helpers.R"))
 source(file.path(root, "R", "report_toolkit.R"))
+source(file.path(root, "R", "format_money.R"))
 source(file.path(root, "R", "pacta_core.R"))
 
 # --- pacta_prejoin_sectors ---------------------------------------------------

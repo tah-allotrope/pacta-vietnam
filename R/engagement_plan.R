@@ -35,6 +35,79 @@
   args[idx + 1]
 }
 
+#' Map a resolved step name to its registry entry key.
+#'
+#' Per-sector steps resolve as `trisk_sector_demo_<sector>` but are declared
+#' once as `trisk_sector_demo`; any other display name that extends a
+#' registry key with a suffix maps back to that key.
+#' @param name character(1) -- resolved step name.
+#' @param registry list -- step_registry() output.
+#' @return character(1) -- the registry key.
+.registry_key_for_step <- function(name, registry) {
+  if (!is.null(registry[[name]])) return(name)
+  for (key in names(registry)) {
+    if (startsWith(name, paste0(key, "_"))) return(key)
+  }
+  name
+}
+
+#' Validate inter-step file dependencies for a resolved step list (Wave 5
+#' PHASE-05, S3).
+#'
+#' For each step's `requires_fn` paths: when some registry step produces the
+#' path but appears in this run *after* the requiring step, that is a hard
+#' ordering violation and this stops. When no step in this run produces the
+#' path, the step reads a previous run's artifact -- a warning naming the
+#' file, escalated to an error under `strict = TRUE` (--strict-deps).
+#'
+#' @param steps list -- resolve_step_list() output (possibly filtered).
+#' @param cfg list -- the loaded engagement config.
+#' @param registry list -- step_registry() output; overridable for tests.
+#' @param strict logical(1) -- escalate previous-run reads to errors.
+#' @return character -- warning messages (empty when none); stops on a hard
+#'   ordering violation (and, when strict, on a previous-run read).
+#' @export
+validate_step_dependencies <- function(steps, cfg, registry = step_registry(), strict = FALSE) {
+  produces_of <- function(key) {
+    entry <- registry[[key]]
+    if (is.null(entry) || is.null(entry$produces_fn)) return(character(0))
+    entry$produces_fn(cfg)
+  }
+  registry_produces <- function(path) {
+    any(vapply(names(registry), function(k) path %in% produces_of(k), logical(1)))
+  }
+  keys <- vapply(steps, function(s) .registry_key_for_step(s$name, registry), character(1))
+  warnings <- character(0)
+  for (i in seq_along(steps)) {
+    entry <- registry[[keys[[i]]]]
+    if (is.null(entry) || is.null(entry$requires_fn)) next
+    for (r in entry$requires_fn(cfg)) {
+      produced_at <- which(vapply(seq_along(steps), function(j) r %in% produces_of(keys[[j]]), logical(1)))
+      if (any(produced_at > i)) {
+        producer <- steps[[produced_at[produced_at > i][[1]]]]$name
+        stop(sprintf(
+          "validate_step_dependencies: step '%s' requires '%s', which is produced by later step '%s' -- fix cfg$steps order",
+          steps[[i]]$name, r, producer
+        ), call. = FALSE)
+      }
+      if (length(produced_at) == 0) {
+        msg <- if (registry_produces(r)) {
+          sprintf("step '%s' requires '%s', which no step in this run produces -- it will be read from a previous run",
+                  steps[[i]]$name, r)
+        } else {
+          sprintf("step '%s' requires '%s', which no known step produces -- it will be read from a previous run",
+                  steps[[i]]$name, r)
+        }
+        if (isTRUE(strict)) {
+          stop(sprintf("validate_step_dependencies (strict): %s", msg), call. = FALSE)
+        }
+        warnings <- c(warnings, msg)
+      }
+    }
+  }
+  warnings
+}
+
 #' Plan one engagement run: resolve the ordered step list and derive run paths.
 #'
 #' Owns the --full application, raw-loanbook resolution, run_intake
@@ -53,6 +126,7 @@
 #'   intake_present logical(1), steps_before_intake list,
 #'   intake_step list|NULL, steps_after_intake list,
 #'   manifest_path character(1),
+#'   dependency_warnings character,
 #'   manifest_policy list(run_is_partial logical(1),
 #'     only_step character, resume_from character(1)),
 #'   banner character(1).
@@ -91,6 +165,10 @@ plan_engagement_run <- function(cfg, cli) {
   )
   steps <- resolve_step_list(cfg, step_ctx)
   steps <- filter_step_list(steps, only = cli$only_steps, resume_from = cli$resume_from)
+  dependency_warnings <- validate_step_dependencies(steps, cfg, strict = isTRUE(cli$strict_deps))
+  if (length(dependency_warnings) > 0) {
+    for (w in dependency_warnings) warning(w, call. = FALSE)
+  }
 
   # Locate "intake" by name, not by position: run_data_generation may have
   # prepended a generate_vietnam_data step ahead of it (verbatim from
@@ -139,6 +217,7 @@ plan_engagement_run <- function(cfg, cli) {
     intake_step = intake_step,
     steps_after_intake = steps_after_intake,
     manifest_path = manifest_path,
+    dependency_warnings = dependency_warnings,
     manifest_policy = list(
       run_is_partial = run_is_partial,
       only_step = cli$only_steps,
@@ -218,7 +297,8 @@ materialize_resolved_config <- function(cfg, intake_dir, effective_config_path) 
 #'   raw_loanbook character(1)|NULL, skip_intake logical(1),
 #'   top_n character(1)|NULL, only_steps character,
 #'   resume_from character(1) (NA_character_ when unset),
-#'   allow_partial_manifest logical(1), dry_run logical(1).
+#'   allow_partial_manifest logical(1), strict_deps logical(1),
+#'   dry_run logical(1).
 #' @export
 parse_engagement_cli <- function(args = commandArgs(trailingOnly = TRUE)) {
   config_path <- .cli_flag_value(args, "--config")
@@ -227,7 +307,7 @@ parse_engagement_cli <- function(args = commandArgs(trailingOnly = TRUE)) {
       "Usage: Rscript scripts/run_engagement.R --config <path>",
       "[--full] [--raw-loanbook <path>] [--skip-intake] [--top-n <int>]",
       "[--only-step <name> [--only-step <name> ...]] [--resume-from <name>]",
-      "[--allow-partial-manifest] [--dry-run]"
+      "[--allow-partial-manifest] [--strict-deps] [--dry-run]"
     ), call. = FALSE)
   }
 
@@ -246,6 +326,7 @@ parse_engagement_cli <- function(args = commandArgs(trailingOnly = TRUE)) {
     # Opt-in to overwriting a complete public manifest with a partial
     # (filtered) run's manifest.
     allow_partial_manifest = "--allow-partial-manifest" %in% args,
+    strict_deps = "--strict-deps" %in% args,
     dry_run = "--dry-run" %in% args
   )
 }

@@ -1,3 +1,17 @@
+# pactatrisk 0.7.0 (unreleased)
+
+Wave 5 "Gate Enforcement, Deliverable Truth, and the Read-Side Seam".
+
+- **Previously unrecorded orchestrator-planning refactor:** commits b75e676..b1d53e1 created R/engagement_plan.R with parse_engagement_cli(), plan_engagement_run(), enforce_manifest_policy() and materialize_resolved_config(), moving CLI parsing, step resolution, the by-name intake split, the manifest path and partial policy, the snapshot guard rail and the banner out of scripts/run_engagement.R. Execution (subprocesses, manifest JSON shape) remains in R/step_runner.R. Complete.
+- **CI executes (PHASE-01):** every GitHub Actions run had failed since 2026-07-10 at the renv-restore step (renv was never activated in this project). CI now installs R dependencies with scripts/ci/install_deps.R --dev behind an actions/cache step; setup-renv is removed from every job, a failure-visibility step reports a failed weekly refresh, and a CI badge sits at the top of the README.
+- **VND display correction (PHASE-02):** the published PACTA report stated the portfolio as 2.502e+10 tỷ VND (~$1000800 tỷ USD) when the true figure is 25,020.0 bn VND (~US$0.95 bn) — a display-layer unit defect (whole VND divided by 1000 and labelled billions, plus scientific-notation fallback above 1e15). Every money render in R/pacta_core.R now routes through R/format_money.R and converts to USD at the engagement fx_rate_usd_vnd. Display-layer only: no golden number moved, no CSV changed. Also fixed under ASM-002: Git-bash exports LANG/LC_*=C.UTF-8, which R on Windows cannot honor, so the pipeline fell back to the C locale and every paste0() mixing a script literal with a UTF-8-marked CSV string mangled multibyte spans (e.g. "Covered \u2014 TRISK power pilot" became "Covered b"; \u2014 status " became "b" across the HTML reports). The refresh must run with those variables unset (native English_United States.utf8 locale); the scoring literal is additionally hardened to a \u2014 escape with byte-identical output.
+- **Fact assertions (PHASE-03):** gated HTML deliverables carry a .facts.json sidecar (currently the PACTA bank report and the financed-emissions report) whose values INV-013 recomputes from source CSVs and whose rendered strings must appear in the HTML.
+- **Deliverable truth (PHASE-04):** reports/PACTA_Synthesis_Report.html retired to attic/ beside its generator (the Vietnam bank report supersedes it); report dates now derive from artifact modification time; research/future_planning_ideas.md deleted (all three proposals shipped in 2026-04 through 2026-07).
+- **Step dependencies (PHASE-05):** the step registry declares requires_fn/produces_fn per step; plan_engagement_run() refuses a mis-ordered cfg$steps and warns (or with --strict-deps, refuses) a filtered run that reads a previous run artifact; warnings are recorded in the manifest.
+- **Snapshot seam (PHASE-06):** the dashboard reads PACTATRISK_SNAPSHOT_DIR (default dashboard/data) with an ENGAGEMENT_PICKER=1 operator picker; the intake wizard now deletes both the upload and any converted CSV via a finally block.
+
+Full R suite green (FAIL 0). Python suite green. INV-001..INV-013 PASS.
+
 # pactatrisk 0.6.0
 
 Wave 4 "Deliverable Trust, Provenance Truth, and Scale Follow-Through" —

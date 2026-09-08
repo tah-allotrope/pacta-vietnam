@@ -10,7 +10,10 @@ step_registry()
 named list of step definitions, keyed by step name.
 }
 \description{
-Each entry is \code{list(script = character(1), args_fn = function(cfg, ctx) character())}.
+Each entry is \code{list(script = character(1), args_fn = function(cfg, ctx) character())},
+optionally plus \code{produces_fn = function(cfg) character()} (files the step
+writes) and \code{requires_fn = function(cfg) character()} (files the step reads
+that another registry step produces).
 \code{trisk_sector_demo} is special-cased in resolve_step_list() because it
 expands to one step per configured sector, not one step total.
 }

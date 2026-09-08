@@ -72,3 +72,5 @@ Reports remain copied as standalone HTML files into `dashboard/data/reports/`.
 - All monetary values are synthetic **Vietnamese Dong (VND)** unless otherwise noted.
 - TRISK NPV / PD values are scenario-horizon stress outputs, not 1-year regulatory PDs.
 - The dashboard reads only frozen snapshot files under `dashboard/data/`; it does not run PACTA or TRISK calculations live.
+
+Displayed report dates come from each artifact file’s modification date, not from the catalog `date` strings (which remain only as a fallback when the file is absent).

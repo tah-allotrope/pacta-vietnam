@@ -19,6 +19,7 @@ suppressPackageStartupMessages({
 source("R/engagement_config.R")
 source("R/financed_emissions.R")
 source("R/report_toolkit.R")
+source("R/report_facts.R")
 source("R/sector_registry.R")
 
 cfg <- load_engagement_config(get_config_arg())
@@ -93,7 +94,7 @@ html <- paste0(
   "</head><body><div class='container'>",
   sprintf("<h1>%s: %s</h1>", report_label("financed_emissions_title", cfg$report_language %||% "en", tryCatch(load_report_labels(override_csv = if (length(cfg$paths$i18n_override_csv) > 0) cfg$paths$i18n_override_csv else NULL), error=function(e) NULL)), cfg$bank_name),
   "<p style='color:#c53030;'><strong>", report_label("synthetic_disclaimer", cfg$report_language %||% "en", tryCatch(load_report_labels(override_csv = if (length(cfg$paths$i18n_override_csv) > 0) cfg$paths$i18n_override_csv else NULL), error=function(e) NULL)), "</strong></p>",
-  sprintf("<h2>Total Scope 1+2 financed emissions: %.1f tCO2e</h2>", total_fe),
+  sprintf("<h2>Total Scope 1+2 financed emissions: %.1f tCO2e across %d scored borrowers (%d-borrower inventory)</h2>", total_fe, sum(!is.na(fe$financed_emissions_tco2e)), nrow(fe)),
   "<p>No total is published without its data-quality composition:</p>",
   dq_table_html,
   "<h2>Scope 3 exclusion</h2>",
@@ -116,6 +117,19 @@ if (identical(cfg$report_language %||% "en", "bilingual")) {
               html, fixed = TRUE)
 }
 write_html_report(html, file.path(cfg$paths$reports_dir, "Financed_Emissions.html"))
+
+# Wave 5 PHASE-03: facts sidecar (see scripts/pacta_vietnam_scenario.R).
+fe_csv_rel <- file.path(cfg$paths$financed_emissions_output_dir, "financed_emissions.csv")
+fe_facts <- list(
+  report_fact("total_financed_emissions_tco2e", total_fe, fe_csv_rel,
+              "sum", column = "financed_emissions_tco2e", unit = "tCO2e",
+              rendered = sprintf("%.1f tCO2e", total_fe)),
+  report_fact("n_borrowers", nrow(fe), fe_csv_rel,
+              "nrow", unit = "borrowers", rendered = sprintf("%d-borrower inventory", nrow(fe)))
+)
+write_report_facts(fe_facts,
+                   file.path(cfg$paths$reports_dir, "Financed_Emissions.html"),
+                   "scripts/generate_financed_emissions.R")
 cat(sprintf("[OK] Financed emissions written: %s (total %.1f tCO2e across %d scored borrowers)\n",
             out_dir, total_fe, sum(!is.na(fe$financed_emissions_tco2e))))
 if (!fx_configured) {

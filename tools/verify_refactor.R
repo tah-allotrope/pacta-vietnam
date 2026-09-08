@@ -19,7 +19,7 @@
 #   Rscript tools/verify_refactor.R --skip-refresh # classifies the current working
 #                                                   # tree without running anything
 #   Rscript tools/verify_refactor.R --invariants   # runs only the cross-artifact
-#                                                   # invariant checks (INV-001..012),
+#                                                   # invariant checks (INV-001..013),
 #                                                   # never the pipeline refresh
 #
 # Why git diff and not md5sum: git applies core.autocrlf normalization, so a
@@ -52,6 +52,9 @@ TIMESTAMP_BASENAMES <- c(
   "manifest.csv"
 )
 
+# A facts sidecar (.facts.json) changing is intentionally genuine drift: the
+# numbers moved (Wave 5 PHASE-03). Sidecars carry no timestamp (ASM-005), so
+# they cannot be timestamp-class.
 # GATED_HTML_PATHS (Wave 4 PHASE-01): the HTML deliverables a pipeline run
 # regenerates. Before this wave, classify_path() returned "timestamp-class" for
 # EVERY .html file, so all 71 tracked HTML artifacts -- every client-facing
@@ -73,7 +76,6 @@ TIMESTAMP_BASENAMES <- c(
 # instead, which reads from disk and does not need a committed counterpart.
 GATED_HTML_PATHS <- c(
   "reports/PACTA_Vietnam_Bank_Report.html",
-  "reports/PACTA_Synthesis_Report.html",
   "reports/Financed_Emissions.html",
   "reports/SLL_Readiness_Shortlist.html",
   "reports/Sector_Target_Registry.html",
@@ -175,7 +177,7 @@ classify_path <- function(path, volatile_basenames = VOLATILE_BASENAMES,
 }
 
 # ==============================================================================
-# --invariants: cross-artifact consistency checks (INV-001..012)
+# --invariants: cross-artifact consistency checks (INV-001..013)
 #
 # Each inv_*() function takes a repo root (and, where relevant, a snapshot
 # directory) and returns list(id, ok, detail) — detail is a character vector
@@ -633,6 +635,8 @@ inv_engagement_fixture_allowlist <- function(root, allowlist = c("sdb-rehearsal"
   path <- file.path(root, "scripts", "ci", "install_deps.R")
   cran <- .extract_c_literal_from_file(path, "cran_packages")
   if (is.null(cran)) return(character(0))
+  dev <- .extract_c_literal_from_file(path, "dev_packages")
+  if (!is.null(dev)) cran <- union(cran, dev)
   if (any(grepl("trisk.model", readLines(path, warn = FALSE), fixed = TRUE))) {
     return(union(cran, "trisk.model"))
   }
@@ -866,6 +870,86 @@ inv_audit_attests_configured_vintage <- function(root) {
   list(id = "INV-012", ok = length(detail) == 0, detail = detail)
 }
 
+#' INV-013: every gated report's facts sidecar must agree with its source
+#' CSVs and its rendered HTML (Wave 5 PHASE-03 -- the fact-assertion half of
+#' Wave 4's DEC-001). For every path p in the gated list, let s be p with
+#' `.html` replaced by `.facts.json`. A report without a sidecar is skipped
+#' (not yet covered); a sidecar whose values do not recompute from their
+#' source CSVs, or whose rendered strings do not appear in the HTML, is a
+#' violation.
+#'
+#' @param root character -- repo root.
+#' @param gated_html_paths character -- override for tests; default
+#'   GATED_HTML_PATHS.
+#' @return list(id = "INV-013", ok, detail).
+inv_report_facts_agree <- function(root, gated_html_paths = GATED_HTML_PATHS) {
+  detail <- character(0)
+  for (p in gated_html_paths) {
+    s_path <- sub("\\.html$", ".facts.json", p)
+    sidecar <- file.path(root, s_path)
+    if (!file.exists(sidecar)) next
+    disk <- file.path(root, p)
+    if (!file.exists(disk)) {
+      detail <- c(detail, sprintf("%s has a facts sidecar but no report", p))
+      next
+    }
+    parsed <- tryCatch(
+      jsonlite::fromJSON(sidecar, simplifyVector = FALSE),
+      error = function(e) NULL
+    )
+    if (is.null(parsed) || is.null(parsed$facts)) {
+      detail <- c(detail, sprintf("%s: facts sidecar is missing a facts array", p))
+      next
+    }
+    html <- paste(readLines(disk, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+    for (fact in parsed$facts) {
+      name <- fact$name
+      value <- suppressWarnings(as.numeric(fact$value))
+      csv_rel <- fact$source$csv
+      column <- fact$source$column
+      agg <- fact$source$agg
+      rendered <- fact$rendered
+      csv_path <- file.path(root, csv_rel)
+      if (!file.exists(csv_path)) {
+        detail <- c(detail, sprintf("%s: fact '%s' source CSV is missing: %s", p, name, csv_rel))
+        next
+      }
+      df <- tryCatch(utils::read.csv(csv_path, stringsAsFactors = FALSE),
+                     error = function(e) NULL)
+      if (is.null(df)) {
+        detail <- c(detail, sprintf("%s: fact '%s' source CSV is unreadable: %s", p, name, csv_rel))
+        next
+      }
+      recomputed <- NA_real_
+      if (identical(agg, "sum")) {
+        recomputed <- sum(as.numeric(df[[column]]), na.rm = TRUE)
+      } else if (identical(agg, "nrow")) {
+        recomputed <- nrow(df)
+      } else if (identical(agg, "n_distinct")) {
+        recomputed <- length(unique(df[[column]]))
+      } else {
+        detail <- c(detail, sprintf("%s: fact '%s' has unknown agg '%s'", p, name, agg))
+        next
+      }
+      if (is.na(value) || is.na(recomputed) ||
+          abs(recomputed - value) > 1e-9 * max(1, abs(value))) {
+        detail <- c(detail, sprintf(
+          "%s: fact '%s' is %s but %s gives %s",
+          p, name, as.character(fact$value), csv_rel, as.character(recomputed)
+        ))
+      }
+      if (is.null(rendered) || length(rendered) == 0 ||
+          !grepl(rendered, html, fixed = TRUE)) {
+        detail <- c(detail, sprintf(
+          "%s: fact '%s' rendered as '%s' does not appear in the report",
+          p, name, as.character(rendered)
+        ))
+      }
+    }
+  }
+  list(id = "INV-013", ok = length(detail) == 0, detail = detail)
+}
+
 #' Run every cross-artifact invariant and print a [PASS]/[FAIL] report.
 #' @param root character — repo root.
 #' @param snapshot_dir character — snapshot directory relative to root,
@@ -884,7 +968,8 @@ run_invariants <- function(root, snapshot_dir = "dashboard/data") {
     inv_scenario_vintage_declared(root),
     inv_deliverables_carry_disclaimer(root),
     inv_manifest_plausible(root),
-    inv_audit_attests_configured_vintage(root)
+    inv_audit_attests_configured_vintage(root),
+    inv_report_facts_agree(root)
   )
 
   for (r in results) {

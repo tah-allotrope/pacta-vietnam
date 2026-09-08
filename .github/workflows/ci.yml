@@ -26,6 +26,8 @@ jobs:
 
   r-tests:
     runs-on: ubuntu-latest
+    env:
+      R_LIBS_USER: ${{ github.workspace }}/.rlib
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,14 +43,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      - name: Restore R dependencies via renv
-        uses: r-lib/actions/setup-renv@v2
+      - name: Create R library directory
+        run: mkdir -p "$R_LIBS_USER"
+
+      - name: Cache R library
+        uses: actions/cache@v4
         with:
-          cache-version: 1
+          path: ${{ github.workspace }}/.rlib
+          key: ${{ runner.os }}-R4.5-${{ hashFiles('scripts/ci/install_deps.R') }}
+
+      - name: Install R dependencies
+        run: Rscript scripts/ci/install_deps.R --dev
 
       - name: Verify pactatrisk package loads
         run: |
-          Rscript -e "if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools'); devtools::load_all('.'); cat('pactatrisk loads OK\n')"
+          Rscript -e "devtools::load_all('.'); cat('pactatrisk loads OK\n')"
 
       # Wave 4 PHASE-04. devtools::load_all() above loads every function in R/
       # regardless of NAMESPACE, so it cannot notice when NAMESPACE goes stale.
@@ -58,7 +67,7 @@ jobs:
       - name: NAMESPACE is up to date with roxygen
         run: |
           cp NAMESPACE /tmp/NAMESPACE.before
-          Rscript -e "if (!requireNamespace('roxygen2', quietly = TRUE)) install.packages('roxygen2'); roxygen2::roxygenise()"
+          Rscript -e "roxygen2::roxygenise()"
           diff -u /tmp/NAMESPACE.before NAMESPACE
 
       - name: Run R tests
@@ -69,6 +78,8 @@ jobs:
 
   sdb-engagement:
     runs-on: ubuntu-latest
+    env:
+      R_LIBS_USER: ${{ github.workspace }}/.rlib
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -84,10 +95,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      - name: Restore R dependencies via renv
-        uses: r-lib/actions/setup-renv@v2
+      - name: Create R library directory
+        run: mkdir -p "$R_LIBS_USER"
+
+      - name: Cache R library
+        uses: actions/cache@v4
         with:
-          cache-version: 1
+          path: ${{ github.workspace }}/.rlib
+          key: ${{ runner.os }}-R4.5-${{ hashFiles('scripts/ci/install_deps.R') }}
+
+      - name: Install R dependencies
+        run: Rscript scripts/ci/install_deps.R --dev
 
       - name: Run SDB engagement end-to-end
         run: Rscript scripts/run_engagement.R --config engagements/sdb-rehearsal/engagement_config.json
@@ -106,6 +124,8 @@ jobs:
   byte-identity:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      R_LIBS_USER: ${{ github.workspace }}/.rlib
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -121,10 +141,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      - name: Restore R dependencies via renv
-        uses: r-lib/actions/setup-renv@v2
+      - name: Create R library directory
+        run: mkdir -p "$R_LIBS_USER"
+
+      - name: Cache R library
+        uses: actions/cache@v4
         with:
-          cache-version: 1
+          path: ${{ github.workspace }}/.rlib
+          key: ${{ runner.os }}-R4.5-${{ hashFiles('scripts/ci/install_deps.R') }}
+
+      - name: Install R dependencies
+        run: Rscript scripts/ci/install_deps.R --dev
 
       - name: Byte-identity acceptance check
         run: Rscript tools/verify_refactor.R

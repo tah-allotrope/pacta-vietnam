@@ -1,101 +1,101 @@
 {
-  "generated_at": "2026-09-02T11:24:48+0700",
-  "git_sha": "3e2c8d97fe9bbc80ba7c12b2d0631a3ebe3990ad",
+  "generated_at": "2026-09-08T08:41:41+0700",
+  "git_sha": "5f7c3948be5cd49685c461772b25c16042cae588",
   "steps": [
     {
       "name": "pacta_vietnam_scenario",
       "status": "ok",
-      "seconds": 12.1,
+      "seconds": 23.5,
       "error_excerpt": {}
     },
     {
       "name": "trisk_prepare_inputs",
       "status": "ok",
-      "seconds": 3.1,
+      "seconds": 4.9,
       "error_excerpt": {}
     },
     {
       "name": "trisk_sector_demo_power",
       "status": "ok",
-      "seconds": 15,
+      "seconds": 32.1,
       "error_excerpt": {}
     },
     {
       "name": "trisk_sector_demo_cement",
       "status": "ok",
-      "seconds": 11.1,
+      "seconds": 22.8,
       "error_excerpt": {}
     },
     {
       "name": "trisk_sector_demo_steel",
       "status": "ok",
-      "seconds": 11.1,
+      "seconds": 24.4,
       "error_excerpt": {}
     },
     {
       "name": "trisk_scenario_grid",
       "status": "ok",
-      "seconds": 3,
+      "seconds": 5.5,
       "error_excerpt": {}
     },
     {
       "name": "sector_prioritization",
       "status": "ok",
-      "seconds": 2.7,
+      "seconds": 5.6,
       "error_excerpt": {}
     },
     {
       "name": "refresh_dashboard_data",
       "status": "ok",
-      "seconds": 1.5,
+      "seconds": 2.6,
       "error_excerpt": {}
     },
     {
       "name": "engagement_scoring",
       "status": "ok",
-      "seconds": 1.5,
+      "seconds": 3.5,
       "error_excerpt": {}
     },
     {
       "name": "financed_emissions",
       "status": "ok",
-      "seconds": 1,
+      "seconds": 2.3,
       "error_excerpt": {}
     },
     {
       "name": "sll_readiness",
       "status": "ok",
-      "seconds": 0.5,
+      "seconds": 1,
       "error_excerpt": {}
     },
     {
       "name": "generate_targets",
       "status": "ok",
-      "seconds": 1,
+      "seconds": 1.7,
       "error_excerpt": {}
     },
     {
       "name": "generate_engagement_letters",
       "status": "ok",
-      "seconds": 1.5,
+      "seconds": 3.2,
       "error_excerpt": {}
     },
     {
       "name": "generate_disclosure_pack",
       "status": "ok",
-      "seconds": 1.5,
+      "seconds": 3.6,
       "error_excerpt": {}
     },
     {
       "name": "refresh_audit",
       "status": "ok",
-      "seconds": 1.3,
+      "seconds": 3.1,
       "error_excerpt": {}
     },
     {
       "name": "record_history",
       "status": "ok",
-      "seconds": 0.9,
+      "seconds": 1.4,
       "error_excerpt": {}
     }
   ],
@@ -111,5 +111,6 @@
   },
   "bank_slug": "mcb-demo",
   "config_path": "engagements/mcb-demo/engagement_config.json",
-  "scenario_vintage": "pdp8-2025-adjusted"
+  "scenario_vintage": "pdp8-2025-adjusted",
+  "dependency_warnings": []
 }

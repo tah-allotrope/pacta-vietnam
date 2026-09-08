@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 
 import streamlit as st
@@ -52,9 +53,52 @@ def apply_page_frame(title: str, subtitle: str | None = None) -> None:
         """,
         unsafe_allow_html=True,
     )
+    _maybe_render_engagement_picker()
     st.markdown(f"# {title}")
     if subtitle:
         st.caption(subtitle)
+
+
+def _engagement_snapshot_options() -> list:
+    """Snapshot directories eligible for the ENGAGEMENT_PICKER (Wave 5 PHASE-06)."""
+    from pathlib import Path
+
+    from dashboard.lib.loaders import ROOT
+
+    options = []
+    public = ROOT / "data"
+    if (public / "pipeline_manifest.json").exists():
+        options.append(public)
+    engagements_root = ROOT.parent / "engagements"
+    if engagements_root.is_dir():
+        for snapshot in sorted(engagements_root.glob("*/snapshot")):
+            if (snapshot / "pipeline_manifest.json").exists() and snapshot not in options:
+                options.append(snapshot)
+    return options
+
+
+def _maybe_render_engagement_picker() -> None:
+    """Operator-only engagement picker (Wave 5 PHASE-06).
+
+    Gated behind ENGAGEMENT_PICKER=1 for operator machines only: setting
+    os.environ from a callback affects the whole process, so concurrent
+    viewers would change each other's data. Never enable on a multi-user
+    deployment.
+    """
+    if os.environ.get("ENGAGEMENT_PICKER") != "1":
+        return
+    options = _engagement_snapshot_options()
+    if len(options) < 2:
+        return
+    labels = [(p.parent.name if p.parent.parent.name == "engagements" else p.name) for p in options]
+    current = os.environ.get("PACTATRISK_SNAPSHOT_DIR")
+    try:
+        index = [str(p) for p in options].index(current) if current else 0
+    except ValueError:
+        index = 0
+    choice = st.sidebar.selectbox("Engagement snapshot", options, index=index,
+                                  format_func=lambda p: (p.parent.name if p.parent.parent.name == "engagements" else p.name))
+    os.environ["PACTATRISK_SNAPSHOT_DIR"] = str(choice)
 
 
 def public_demo_banner() -> None:

@@ -19,6 +19,7 @@ step_ctx list, steps list of list(name, script, args),
 intake_present logical(1), steps_before_intake list,
 intake_step list|NULL, steps_after_intake list,
 manifest_path character(1),
+dependency_warnings character,
 manifest_policy list(run_is_partial logical(1),
 only_step character, resume_from character(1)),
 banner character(1).

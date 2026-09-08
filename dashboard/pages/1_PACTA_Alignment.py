@@ -7,7 +7,7 @@ import streamlit as st
 
 from dashboard.lib.branding import apply_page_frame, footer_note, public_demo_banner
 from dashboard.lib.charts import alignment_bar, trajectory_line
-from dashboard.lib.loaders import PACTA_DIR, load_markdown_text, load_pacta_alignment_tables
+from dashboard.lib.loaders import load_markdown_text, load_pacta_alignment_tables, pacta_dir
 
 
 SECTOR_LABELS = {
@@ -256,7 +256,7 @@ with left:
 with right:
     st.markdown("**Static PACTA snapshot charts**")
     for file_name, fallback_caption in SECTOR_IMAGE_MAP[selected_sector]:
-        path = PACTA_DIR / file_name
+        path = pacta_dir() / file_name
         if path.exists():
             st.image(str(path), caption=_caption_lookup(readme, file_name) or fallback_caption, use_container_width=True)
     st.caption("Static image panels are upstream PACTA outputs. The table and Plotly views next to them are the interactive layer for v1.")
@@ -264,9 +264,9 @@ with right:
 st.subheader("Closing figures")
 closing1, closing2 = st.columns(2)
 with closing1:
-    st.image(str(PACTA_DIR / "12_vn_alignment_overview.png"), caption=_caption_lookup(readme, "12_vn_alignment_overview.png"), use_container_width=True)
+    st.image(str(pacta_dir() / "12_vn_alignment_overview.png"), caption=_caption_lookup(readme, "12_vn_alignment_overview.png"), use_container_width=True)
 with closing2:
-    st.image(str(PACTA_DIR / "13_vn_coal_stranded_risk.png"), caption=_caption_lookup(readme, "13_vn_coal_stranded_risk.png"), use_container_width=True)
+    st.image(str(pacta_dir() / "13_vn_coal_stranded_risk.png"), caption=_caption_lookup(readme, "13_vn_coal_stranded_risk.png"), use_container_width=True)
 
 with st.expander("Methodology footnote"):
     st.markdown(

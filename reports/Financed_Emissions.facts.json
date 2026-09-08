@@ -1,0 +1,28 @@
+{
+  "report": "reports/Financed_Emissions.html",
+  "generated_by": "scripts/generate_financed_emissions.R",
+  "facts": [
+    {
+      "name": "total_financed_emissions_tco2e",
+      "value": 81482154.7358848,
+      "unit": "tCO2e",
+      "rendered": "81482154.7 tCO2e",
+      "source": {
+        "csv": "output/financed_emissions/financed_emissions.csv",
+        "column": "financed_emissions_tco2e",
+        "agg": "sum"
+      }
+    },
+    {
+      "name": "n_borrowers",
+      "value": 25,
+      "unit": "borrowers",
+      "rendered": "25-borrower inventory",
+      "source": {
+        "csv": "output/financed_emissions/financed_emissions.csv",
+        "column": null,
+        "agg": "nrow"
+      }
+    }
+  ]
+}

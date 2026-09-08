@@ -1,4 +1,5 @@
 # PACTA + TRISK Vietnam — Bank Climate Alignment & Transition-Risk Platform
+[![CI](https://github.com/tah-allotrope/pacta-trisk/actions/workflows/ci.yml/badge.svg)](https://github.com/tah-allotrope/pacta-trisk/actions/workflows/ci.yml)
 
 An end-to-end demonstration platform that shows how a Vietnamese bank can
 measure loanbook climate alignment (**PACTA** — Paris Agreement Capital
@@ -109,7 +110,7 @@ $env:Path += ";C:\Program Files\R\R-4.5.2\bin"
 Rscript tools/verify_refactor.R --invariants
 ```
 
-This checks twelve cross-artifact consistency rules against the current tree
+This checks thirteen cross-artifact consistency rules against the current tree
 without running anything: the TRISK scenario grid's base-parameter cell
 must equal the base (non-grid) TRISK run; no scenario vintage may exist at
 two paths; every engagement's `data_source` column must equal its own
@@ -123,7 +124,7 @@ synthetic-data disclaimer; a complete pipeline manifest must not report one
 identical duration for every step; and the refresh audit's recorded scenario
 checksums must match the inputs the engagement config actually declares. It
 prints `INVARIANTS PASS` and exits 0 only
-when every invariant holds. Both `.github/workflows/ci.yml` and
+when every invariant holds. Gated reports carry a .facts.json sidecar whose values are recomputed from source CSVs by INV-013 (currently covering the PACTA bank report and the financed-emissions report); a headline figure that disagrees with its CSV fails the gate. Both `.github/workflows/ci.yml` and
 `.github/workflows/refresh.yml` run this on every push and every weekly
 refresh.
 
@@ -203,6 +204,8 @@ the missing key — never silently dropped.
 | `TRISK_LIVE_RERUN=1` | Live TRISK rerun in the Scenario Builder (**never on Cloud** — no R runtime) |
 | `PILOT_ANALYTICS_ENDPOINT` | Anonymous page-view counter (see `docs/streamlit-deploy.md`) |
 | `R_RSCRIPT` | Path to `Rscript` for the R-calling features above |
+| `PACTATRISK_SNAPSHOT_DIR` | Read a different snapshot directory (default `dashboard/data`) |
+| `ENGAGEMENT_PICKER=1` | Sidebar engagement picker (operator machine only — never on a multi-user deployment) |
 
 ## Methodology & caveats
 

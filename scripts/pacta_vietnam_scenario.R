@@ -38,6 +38,8 @@ source("R/engagement_config.R")
 source("R/sector_registry.R")
 source("R/report_toolkit.R")
 source("R/matching_helpers.R")
+source("R/format_money.R")
+source("R/report_facts.R")
 source("R/pacta_core.R")
 
 cfg <- load_engagement_config(get_config_arg())
@@ -80,7 +82,28 @@ gaps <- pacta_alignment_gaps(ms$ms_portfolio, ms$target_pdp8, sda$sda_portfolio,
 imgs <- pacta_encode_charts(vn_output)
 
 report_path <- pacta_build_report(bank_name, bank_short, inputs$loanbook, matches$prioritized,
-                                   gaps$ms_alignment_2030, gaps$sda_alignment_2030, imgs, report_dir)
+                                   gaps$ms_alignment_2030, gaps$sda_alignment_2030, imgs, report_dir,
+                                   fx_rate_usd_vnd = cfg$inputs$fx_rate_usd_vnd)
+
+# Wave 5 PHASE-03: facts sidecar -- headline figures recomputed from source
+# CSVs and asserted by INV-013, so a wrong number fails a gate instead of
+# being frozen by one.
+pacta_report_rel <- file.path(cfg$paths$reports_dir, "PACTA_Vietnam_Bank_Report.html")
+pacta_loanbook_total <- sum(inputs$loanbook$loan_size_outstanding)
+pacta_matched_check <- utils::read.csv(
+  file.path(cfg$paths$pacta_output_dir, "02_vn_matched_prioritized.csv"),
+  stringsAsFactors = FALSE)
+pacta_facts <- list(
+  report_fact("portfolio_total_vnd", pacta_loanbook_total, cfg$inputs$loanbook_csv,
+              "sum", column = "loan_size_outstanding", unit = "VND",
+              rendered = format_vnd_bn(pacta_loanbook_total)),
+  report_fact("n_loans", nrow(inputs$loanbook), cfg$inputs$loanbook_csv,
+              "nrow", unit = "loans", rendered = as.character(nrow(inputs$loanbook))),
+  report_fact("n_matched", nrow(pacta_matched_check),
+              file.path(cfg$paths$pacta_output_dir, "02_vn_matched_prioritized.csv"),
+              "nrow", unit = "loans", rendered = as.character(nrow(pacta_matched_check)))
+)
+write_report_facts(pacta_facts, pacta_report_rel, "scripts/pacta_vietnam_scenario.R")
 
 # ==============================================================================
 # FINAL SUMMARY
@@ -88,13 +111,13 @@ report_path <- pacta_build_report(bank_name, bank_short, inputs$loanbook, matche
 
 n_loans   <- nrow(inputs$loanbook)
 n_matched <- nrow(matches$prioritized)
-total_portfolio_bn <- round(sum(inputs$loanbook$loan_size_outstanding) / 1000)
+total_portfolio_vnd <- sum(inputs$loanbook$loan_size_outstanding)
 
 cat("========================================\n")
 cat("PACTA Vietnam pipeline complete\n")
 cat("========================================\n\n")
-cat(sprintf("  Loanbook analysed : %d loans / %s bn VND\n",
-            n_loans, format(total_portfolio_bn, big.mark = ",")))
+cat(sprintf("  Loanbook analysed : %d loans / %s\n",
+            n_loans, format_vnd_bn(total_portfolio_vnd)))
 cat(sprintf("  Matched to ABCD   : %d loans (%.1f%%)\n",
             n_matched, n_matched / n_loans * 100))
 cat(sprintf("  Sectors analysed  : %s\n",

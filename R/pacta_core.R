@@ -64,10 +64,10 @@ pacta_load_inputs <- function(cfg) {
               nrow(co2), paste(unique(co2$scenario), collapse = ", ")))
   cat(sprintf("  Region ISOs: %d rows\n\n", nrow(region)))
 
-  # Portfolio summary
-  total_vnd_bn <- sum(loanbook$loan_size_outstanding) / 1000
-  cat(sprintf("  Total portfolio: %s bn VND (~$%.1fB USD)\n\n",
-              format(round(total_vnd_bn), big.mark = ","), total_vnd_bn / 25000))
+  # Portfolio summary (whole VND; display only via R/format_money.R)
+  total_vnd <- sum(loanbook$loan_size_outstanding)
+  cat(sprintf("  Total portfolio: %s (~$%.2fB USD)\n\n",
+              format_vnd_bn(total_vnd), total_vnd / cfg$inputs$fx_rate_usd_vnd / 1e9))
 
   list(loanbook = loanbook, abcd = abcd, scenario = scenario, co2 = co2, region = region)
 }
@@ -128,7 +128,7 @@ pacta_prejoin_sectors <- function(loanbook) {
     group_by(sector_classified) %>%
     summarise(
       n_loans           = n(),
-      total_bn_vnd      = round(sum(loan_size_outstanding, na.rm = TRUE) / 1000),
+      total_bn_vnd      = round(vnd_to_billion(sum(loan_size_outstanding, na.rm = TRUE)), 1),
       pct_of_portfolio  = round(sum(loan_size_outstanding, na.rm = TRUE) /
                                   sum(loanbook$loan_size_outstanding) * 100, 1),
       .groups = "drop"
@@ -277,7 +277,7 @@ pacta_coverage <- function(loanbook_classified, matched, output_dir, bank_name, 
     mutate(
       matches_outstanding = ifelse(is.na(matches_outstanding), 0, matches_outstanding),
       match_pct           = round(matches_outstanding / total_outstanding * 100, 1),
-      total_bn_vnd        = round(total_outstanding / 1000)
+      total_bn_vnd        = round(vnd_to_billion(total_outstanding), 1)
     )
 
   cat("  Coverage by sector:\n")
@@ -324,8 +324,7 @@ pacta_coverage <- function(loanbook_classified, matched, output_dir, bank_name, 
     )) +
     labs(
       title    = sprintf("%s Portfolio: PACTA Coverage", bank_short),
-      subtitle = paste0("Total: ", format(round(outstanding_total / 1000), big.mark = ","),
-                        " bn VND | ", bank_name, " 2025"),
+      subtitle = paste0("Total: ", format_vnd_bn(outstanding_total), " | ", bank_name, " 2025"),
       fill     = NULL
     ) +
     theme_void() +
@@ -767,9 +766,9 @@ pacta_alignment_gaps <- function(ms_portfolio, target_pdp8, sda_portfolio, sda_t
   }
 
   # --- Chart: Coal Stranded Asset Risk ---
-  coal_exposure_bn <- loanbook %>%
+  coal_exposure_vnd <- loanbook %>%
     filter(sector_classification_direct_loantaker == "3511") %>%
-    summarise(total = sum(loan_size_outstanding) / 1000) %>%
+    summarise(total = sum(loan_size_outstanding)) %>%
     pull(total)
 
   coal_loans <- loanbook %>%
@@ -783,15 +782,15 @@ pacta_alignment_gaps <- function(ms_portfolio, target_pdp8, sda_portfolio, sda_t
     ) %>%
     filter(!is.na(is_coal_power) | sector_classification_direct_loantaker == "0510") %>%
     group_by(name_ultimate_parent) %>%
-    summarise(exposure_bn = sum(loan_size_outstanding) / 1000, .groups = "drop") %>%
-    arrange(desc(exposure_bn))
+    summarise(exposure_vnd = sum(loan_size_outstanding), .groups = "drop") %>%
+    arrange(desc(exposure_vnd))
 
   if (nrow(coal_loans) > 0) {
     p_stranded <- ggplot(coal_loans,
-                         aes(x = reorder(name_ultimate_parent, exposure_bn),
-                             y = exposure_bn, fill = "Coal & Mining")) +
+                         aes(x = reorder(name_ultimate_parent, vnd_to_billion(exposure_vnd)),
+                             y = vnd_to_billion(exposure_vnd), fill = "Coal & Mining")) +
       geom_col(fill = "#c0392b") +
-      geom_text(aes(label = paste0(round(exposure_bn), " bn VND")),
+      geom_text(aes(label = paste0(round(vnd_to_billion(exposure_vnd)), " bn VND")),
                 hjust = -0.1, size = 3) +
       coord_flip() +
       scale_y_continuous(expand = expansion(mult = c(0, 0.3)),
@@ -799,8 +798,7 @@ pacta_alignment_gaps <- function(ms_portfolio, target_pdp8, sda_portfolio, sda_t
       labs(
         title    = "Stranded Asset Risk: Coal & Mining Exposure by Parent",
         subtitle = paste0("Total coal power + mining: ",
-                          format(round(coal_exposure_bn), big.mark = ","),
-                          " bn VND",
+                          format_vnd_bn(coal_exposure_vnd),
                           "\nJETP coal retirement targets early closure of 5-8 GW by 2035"),
         x = NULL, y = "Exposure (bn VND)"
       ) +
@@ -899,38 +897,39 @@ chart_html <- function(imgs, key, caption = "") {
 #' @return chr (invisible) — the path the report was written to.
 #' @export
 pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
-                                ms_alignment_2030, sda_alignment_2030, imgs, report_dir) {
+                                ms_alignment_2030, sda_alignment_2030, imgs, report_dir,
+                                fx_rate_usd_vnd = 26300) {
   cat("--- Section 9: Building Vietnam HTML report ---\n\n")
 
   today_str      <- format(Sys.Date(), "%B %d, %Y")
   n_loans        <- nrow(loanbook)
   n_matched      <- nrow(matched)
   n_sectors      <- n_distinct(matched$sector)
-  total_portfolio_bn <- round(sum(loanbook$loan_size_outstanding) / 1000)
+  total_portfolio_vnd <- sum(loanbook$loan_size_outstanding)
 
   # Compute KPI figures
-  coal_power_bn <- loanbook %>%
+  coal_power_vnd <- loanbook %>%
     filter(sector_classification_direct_loantaker == "3511",
            name_ultimate_parent %in% c("EVN (Electricity of Vietnam)",
                                        "Vinacomin Power JSC",
                                        "International Power Mong Duong",
                                        "PVN Power Corporation",
                                        "Nghi Son Power LLC")) %>%
-    summarise(s = sum(loan_size_outstanding) / 1000) %>% pull(s)
+    summarise(s = sum(loan_size_outstanding)) %>% pull(s)
 
-  renew_bn <- loanbook %>%
+  renew_vnd <- loanbook %>%
     filter(name_ultimate_parent %in% c("Trung Nam Group","BIM Group",
                                        "Thanh Thanh Cong Group","Xuan Thien Group",
                                        "T&T Group","Gia Lai Electricity JSC")) %>%
-    summarise(s = sum(loan_size_outstanding) / 1000) %>% pull(s)
+    summarise(s = sum(loan_size_outstanding)) %>% pull(s)
 
-  ev_bn <- loanbook %>%
+  ev_vnd <- loanbook %>%
     filter(name_ultimate_parent == "Vingroup JSC") %>%
-    summarise(s = sum(loan_size_outstanding) / 1000) %>% pull(s)
+    summarise(s = sum(loan_size_outstanding)) %>% pull(s)
 
-  pct_coal   <- round(coal_power_bn / total_portfolio_bn * 100, 1)
-  pct_renew  <- round(renew_bn      / total_portfolio_bn * 100, 1)
-  pct_ev     <- round(ev_bn         / total_portfolio_bn * 100, 1)
+  pct_coal   <- round(coal_power_vnd / total_portfolio_vnd * 100, 1)
+  pct_renew  <- round(renew_vnd      / total_portfolio_vnd * 100, 1)
+  pct_ev     <- round(ev_vnd         / total_portfolio_vnd * 100, 1)
 
   # Alignment summary for HTML table
   ms_html_rows <- ms_alignment_2030 %>%
@@ -1115,14 +1114,14 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
 <div class="exec-summary" id="exec">
   <h2>1. Tóm tắt điều hành (Executive Summary)</h2>
   <p>
-    Phân tích PACTA này đánh giá danh mục cho vay ', format(total_portfolio_bn, big.mark = ","), ' tỷ VND
-    (~$', round(total_portfolio_bn / 25000, 1), ' tỷ USD) của ', bank_name, ' đối với
+    Phân tích PACTA này đánh giá danh mục cho vay ', format_vnd_bn(total_portfolio_vnd), '
+    (~$', round(total_portfolio_vnd / fx_rate_usd_vnd / 1e9, 2), 'B USD) của ', bank_name, ' đối với
     <strong>Quy hoạch Điện 8 (PDP8)</strong>, cam kết NDC 2022 của Việt Nam, và kịch bản
     Net Zero 2050 toàn cầu của IEA.
   </p>
   <div class="kpi-row">
     <div class="kpi-card">
-      <div class="value">', format(total_portfolio_bn, big.mark = ","), '</div>
+      <div class="value">', formatC(vnd_to_billion(total_portfolio_vnd), format = "f", digits = 1, big.mark = ","), '</div>
       <div class="label">bn VND<br>Tổng danh mục PACTA</div>
     </div>
     <div class="kpi-card">
@@ -1149,7 +1148,7 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
   <div class="callout callout-danger">
     <strong>Phát hiện chính (Key Finding):</strong>
     Danh mục ', bank_short, ' <strong>không đồng thuận với Paris</strong> theo kịch bản IEA NZE.
-    Rủi ro cao nhất: khoản vay điện than (~', format(round(coal_power_bn), big.mark = ","), ' tỷ VND)
+    Rủi ro cao nhất: khoản vay điện than (~', format_vnd_bn(coal_power_vnd), ')
     đối mặt với rủi ro tài sản mắc kẹt trong 10&ndash;15 năm do lộ trình JETP và PDP8
     cắt giảm than. Cơ hội tích cực: danh mục năng lượng tái tạo và VinFast đang đi đúng hướng.
   </div>
@@ -1239,7 +1238,7 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
         <td><span class="badge badge-green">Thấp</span></td></tr>
     <tr style="font-weight:bold; background:#edf2f7;">
         <td>Tổng cộng</td><td>', n_loans, '</td>
-        <td>', format(total_portfolio_bn, big.mark = ","), '</td>
+        <td>', formatC(vnd_to_billion(total_portfolio_vnd), format = "f", digits = 1, big.mark = ","), '</td>
         <td>100%</td><td></td></tr>
   </table>
 </div>
@@ -1262,7 +1261,7 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
   <h3>Lộ trình điện than</h3>
   ', chart_html(imgs, "coal_traj", sprintf("Lộ trình công suất điện than: %s portfolio vs PDP8 và NZE", bank_short)), '
   <div class="callout callout-danger">
-    <strong>Rủi ro than:</strong> ', bank_short, ' có ', format(round(coal_power_bn), big.mark = ","), ' tỷ VND
+    <strong>Rủi ro than:</strong> ', bank_short, ' có ', format_vnd_bn(coal_power_vnd), ' 
     cho vay điện than. Các nhà máy BOT (Nghi Son 2, Mong Duong 2) bị khóa bởi hợp đồng PPA đến ~2035,
     khiến việc nghỉ hưu sớm phụ thuộc vào gói mua lại chính phủ trong JETP.
     Rủi ro NPL ước tính: nếu 20% danh mục than bị suy giảm &rarr; ~1,400 tỷ VND tổn thất tiềm năng.
@@ -1270,7 +1269,7 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
   <h3>Lộ trình năng lượng tái tạo</h3>
   ', chart_html(imgs, "renew_traj", sprintf("Năng lượng tái tạo: %s portfolio (Trung Nam, BIM, TTC, Xuan Thien, T&T) vs PDP8", bank_short)), '
   <div class="callout callout-success">
-    <strong>Cơ hội tích cực:</strong> ', format(round(renew_bn), big.mark = ","), ' tỷ VND
+    <strong>Cơ hội tích cực:</strong> ', format_vnd_bn(renew_vnd), ' 
     cho vay tái tạo của ', bank_short, ' (mặt trời + gió) đang phù hợp với PDP8.
     Đây là tài sản chất lượng tốt trong danh mục khí hậu.
   </div>
@@ -1396,11 +1395,11 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
   <table>
     <tr><th>Kịch bản rủi ro</th><th>Giả định</th><th>Tổn thất tiềm năng (tỷ VND)</th></tr>
     <tr><td>Cơ sở (Base)</td><td>10% danh mục than bị suy giảm</td>
-        <td>', format(round(coal_power_bn * 0.10), big.mark = ","), '</td></tr>
+        <td>', format_vnd_bn(coal_power_vnd * 0.10), '</td></tr>
     <tr><td>Bất lợi (Adverse)</td><td>20% danh mục than bị suy giảm</td>
-        <td>', format(round(coal_power_bn * 0.20), big.mark = ","), '</td></tr>
+        <td>', format_vnd_bn(coal_power_vnd * 0.20), '</td></tr>
     <tr><td>Nghiêm trọng (Severe)</td><td>35% danh mục than bị suy giảm (JETP accel.)</td>
-        <td>', format(round(coal_power_bn * 0.35), big.mark = ","), '</td></tr>
+        <td>', format_vnd_bn(coal_power_vnd * 0.35), '</td></tr>
   </table>
   <div class="callout callout-warning">
     <strong>BOT Lock-in:</strong> Nhà máy Nghi Son 2 (Marubeni/KEPCO) và Mong Duong 2
@@ -1418,7 +1417,7 @@ pacta_build_report <- function(bank_name, bank_short, loanbook, matched,
   <h3>Ngắn hạn (2025&ndash;2026): Quản lý rủi ro</h3>
   <ul>
     <li>Thiết lập <strong>hạn mức than</strong>: không tăng danh mục điện than vượt ',
-    format(round(coal_power_bn), big.mark = ","), ' tỷ VND hiện tại.</li>
+    format_vnd_bn(coal_power_vnd), ' hiện tại.</li>
     <li>Yêu cầu <strong>kế hoạch chuyển đổi khí hậu</strong> từ THACO, Hoa Phát,
         và VICEM trước khi tái cấp vốn (vay mới hoặc rollover).</li>
     <li>Áp dụng <strong>Hướng dẫn tín dụng xanh SBV</strong> (Khung tín dụng xanh 2023)

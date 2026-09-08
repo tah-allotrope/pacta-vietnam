@@ -28,6 +28,19 @@ def get_rscript_path() -> str:
     return os.environ.get(ENV_RSCRIPT, DEFAULT_RSCRIPT)
 
 
+def cleanup_temp_files(*paths) -> None:
+    """Delete temp files, ignoring missing paths and OS errors.
+
+    Used by the intake wizard's finally block so both the uploaded file and
+    any converted CSV are removed even when validation calls st.stop().
+    """
+    for path in paths:
+        try:
+            Path(path).unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def convert_xlsx_to_csv(xlsx_path: Path) -> Path:
     """Read the Data sheet from an XLSX and write to a temp CSV."""
     import openpyxl

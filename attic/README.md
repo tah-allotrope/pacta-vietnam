@@ -43,3 +43,4 @@ dashboard module or doc referenced `compare/` — only superseded plans and
 research briefs did. It is kept for the same reason as everything else here:
 the methodology-convergence exercise is worth being able to re-read, but it is
 not part of any pipeline and is never tested.
+- `PACTA_Synthesis_Report.html` (retired 2026-09-07, Wave 5 PHASE-04) — superseded methodology reference; the Vietnam bank report (`reports/PACTA_Vietnam_Bank_Report.html`) supersedes it. Retired together with its generator `attic/pacta_synthesis.R`.

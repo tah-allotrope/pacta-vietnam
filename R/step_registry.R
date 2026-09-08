@@ -17,16 +17,33 @@
 # engagement config: effective_config_path, run_intake, raw_loanbook,
 # intake_dir, top_n. Per-sector steps additionally receive `sector` when
 # their args_fn is invoked.
+#
+# Wave 5 PHASE-05: entries with real inter-step dependencies additionally
+# declare `produces_fn`/`requires_fn` -- functions of the engagement config
+# returning repo-relative paths. Static inputs under data/ are NOT listed;
+# only inter-step dependencies. A new step declares its own pair and the
+# ordering is then checked by validate_step_dependencies()
+# (R/engagement_plan.R) rather than assumed -- dependencies recorded only in
+# prose comments are not dependencies.
 # ==============================================================================
 
 #' The full catalog of pipeline steps this repo knows how to run.
 #'
-#' Each entry is `list(script = character(1), args_fn = function(cfg, ctx) character())`.
+#' Each entry is `list(script = character(1), args_fn = function(cfg, ctx) character())`,
+#' optionally plus `produces_fn = function(cfg) character()` (files the step
+#' writes) and `requires_fn = function(cfg) character()` (files the step reads
+#' that another registry step produces).
 #' `trisk_sector_demo` is special-cased in resolve_step_list() because it
 #' expands to one step per configured sector, not one step total.
 #'
 #' @return named list of step definitions, keyed by step name.
 step_registry <- function() {
+  normalized_loanbook <- function(cfg) file.path("engagements", cfg$bank_slug, "intake", "normalized_loanbook.csv")
+  matched_prioritized <- function(cfg) file.path(cfg$paths$pacta_output_dir, "02_vn_matched_prioritized.csv")
+  ms_alignment <- function(cfg) file.path(cfg$paths$pacta_output_dir, "06_vn_ms_alignment_2030.csv")
+  trisk_sector_outputs <- function(cfg) file.path(cfg$paths$trisk_output_root, cfg$trisk_sectors)
+  sector_ranking <- function(cfg) file.path(cfg$paths$prioritization_output_dir, "sector_priority_ranking.csv")
+  engagement_priority <- function(cfg) file.path(cfg$paths$engagement_output_dir, "engagement_priority.csv")
   list(
     generate_vietnam_data = list(
       script = "scripts/generate_vietnam_data.R",
@@ -41,7 +58,8 @@ step_registry <- function() {
           intake_args <- c(intake_args, "--fx-rate-usd-vnd", as.character(cfg$inputs$fx_rate_usd_vnd))
         }
         intake_args
-      }
+      },
+      produces_fn = function(cfg) normalized_loanbook(cfg)
     ),
     validation_report = list(
       script = "scripts/generate_validation_report.R",
@@ -49,7 +67,8 @@ step_registry <- function() {
         "--intake-dir", ctx$intake_dir,
         "--output", file.path(cfg$paths$reports_dir, "Intake_Validation_Report.html"),
         "--bank-name", cfg$bank_name
-      )
+      ),
+      requires_fn = function(cfg) normalized_loanbook(cfg)
     ),
     coverage_report = list(
       script = "scripts/generate_coverage_report.R",
@@ -57,21 +76,27 @@ step_registry <- function() {
         "--config", ctx$effective_config_path,
         "--intake-dir", ctx$intake_dir,
         "--output", file.path(cfg$paths$reports_dir, "Coverage_Reconciliation_Report.html")
-      )
+      ),
+      requires_fn = function(cfg) normalized_loanbook(cfg)
     ),
     pacta_vietnam_scenario = list(
       script = "scripts/pacta_vietnam_scenario.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      produces_fn = function(cfg) c(matched_prioritized(cfg), ms_alignment(cfg))
     ),
     trisk_prepare_inputs = list(
       script = "scripts/trisk_prepare_inputs.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) matched_prioritized(cfg),
+      produces_fn = function(cfg) cfg$paths$trisk_input_root
     ),
     # trisk_sector_demo_<sector>: expanded per-sector in resolve_step_list();
     # this entry documents the shared script and per-sector arg shape.
     trisk_sector_demo = list(
       script = "scripts/trisk_sector_demo.R",
-      args_fn = function(cfg, ctx) c(ctx$sector, "--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c(ctx$sector, "--config", ctx$effective_config_path),
+      requires_fn = function(cfg) cfg$paths$trisk_input_root,
+      produces_fn = function(cfg) trisk_sector_outputs(cfg)
     ),
     trisk_scenario_grid = list(
       script = "scripts/trisk_scenario_grid.R",
@@ -79,7 +104,9 @@ step_registry <- function() {
     ),
     sector_prioritization = list(
       script = "scripts/sector_prioritization.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) c(ms_alignment(cfg), trisk_sector_outputs(cfg)),
+      produces_fn = function(cfg) sector_ranking(cfg)
     ),
     refresh_dashboard_data = list(
       script = "scripts/refresh_dashboard_data.R",
@@ -90,27 +117,32 @@ step_registry <- function() {
       args_fn = function(cfg, ctx) c(
         "--config", ctx$effective_config_path,
         "--w_align", cfg$scoring$weight_alignment, "--w_trisk", cfg$scoring$weight_trisk
-      )
+      ),
+      requires_fn = function(cfg) sector_ranking(cfg),
+      produces_fn = function(cfg) engagement_priority(cfg)
     ),
     # Wave 3 PHASE-05: reads output/engagement/engagement_priority.csv, so
     # it must run after engagement_scoring.
     financed_emissions = list(
       script = "scripts/generate_financed_emissions.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) engagement_priority(cfg)
     ),
     # Wave 3 PHASE-06: reads engagement_priority.csv, so it must run after
     # engagement_scoring (and, per ASM-004, after refresh_dashboard_data --
     # already true here since engagement_scoring itself is placed there).
     sll_readiness = list(
       script = "scripts/sll_readiness.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) engagement_priority(cfg)
     ),
     # Wave 3 PHASE-06: sector target registry, reads SDA/MS portfolio and the
     # engagement's own scenario vintage; must run after engagement_scoring and
     # refresh_dashboard_data for the same reason as sll_readiness.
     generate_targets = list(
       script = "scripts/generate_targets.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) engagement_priority(cfg)
     ),
     generate_engagement_letters = list(
       script = "scripts/generate_engagement_letters.R",
@@ -118,11 +150,13 @@ step_registry <- function() {
         letters_args <- c("--config", ctx$effective_config_path)
         if (!is.null(ctx$top_n)) letters_args <- c(letters_args, "--top_n", ctx$top_n)
         letters_args
-      }
+      },
+      requires_fn = function(cfg) engagement_priority(cfg)
     ),
     generate_disclosure_pack = list(
       script = "scripts/generate_disclosure_pack.R",
-      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path)
+      args_fn = function(cfg, ctx) c("--config", ctx$effective_config_path),
+      requires_fn = function(cfg) engagement_priority(cfg)
     ),
     # Wave 4 PHASE-02: previously the only step receiving no config at all,
     # which is why it hardcoded a scenario vintage and the public snapshot dir.
